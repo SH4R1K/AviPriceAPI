@@ -5,7 +5,7 @@ VisualStudioVersion = 17.8.34316.72
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AviAPI", "AviAPI\AviAPI.csproj", "{541D1AC2-FF20-46A6-9870-E69238984B3D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AviPriceUI", "..\AviPriceUI1\AviPriceUI\AviPriceUI\AviPriceUI.csproj", "{A9AF3243-EB60-4270-9786-5201D320F69E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AviPriceUI", "AviPriceUI\AviPriceUI.csproj", "{6FA11014-BDB1-4130-94F5-E0B02E37BA4C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{541D1AC2-FF20-46A6-9870-E69238984B3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{541D1AC2-FF20-46A6-9870-E69238984B3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{541D1AC2-FF20-46A6-9870-E69238984B3D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A9AF3243-EB60-4270-9786-5201D320F69E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A9AF3243-EB60-4270-9786-5201D320F69E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A9AF3243-EB60-4270-9786-5201D320F69E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A9AF3243-EB60-4270-9786-5201D320F69E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FA11014-BDB1-4130-94F5-E0B02E37BA4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FA11014-BDB1-4130-94F5-E0B02E37BA4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FA11014-BDB1-4130-94F5-E0B02E37BA4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FA11014-BDB1-4130-94F5-E0B02E37BA4C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
