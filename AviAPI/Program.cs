@@ -1,4 +1,5 @@
 using AviAPI.Data;
+using AviAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,10 +22,26 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapGet("/CellMatrixes", ([FromQuery] int idLocation, [FromQuery] int idCategory, AviApiContext context) =>
+async Task GetPriceAsync(Matrix baseLine, int idLocation, int idCategory, AviApiContext context)
+{
+    while (true)
+    {
+        
+    }
+}
+
+app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int idCategory, AviApiContext context) =>
 {
     var baseLine = context.Matrices.Include(m => m.CellMatrices).OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
     var cellMatrix = baseLine.CellMatrices.FirstOrDefault(c => c.IdLocation == idLocation && c.IdCategory == idCategory);
+    var location = context.Locations
+                        .Include(l => l.IdParentLocationNavigation)
+                        .ThenInclude(l => l.IdParentLocationNavigation)
+                        .FirstOrDefault(l => l.IdLocation == idLocation);
+    var category = context.Categories
+                        .Include(l => l.IdParentCategoryNavigation)
+                        .ThenInclude(l => l.IdParentCategoryNavigation)
+                        .FirstOrDefault(l => l.IdCategory == idCategory);
     if (cellMatrix != null)
         return new { baseLine.IdMatrix, cellMatrix.Price, cellMatrix.IdLocation, cellMatrix.IdCategory };
     return null;
