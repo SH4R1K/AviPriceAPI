@@ -1,4 +1,5 @@
 using AviAPI.Data;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,7 +21,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapGet("/GetPrice/{idCategory}/{idLocation}", (int idLocation, int idCategory, AviApiContext context) =>
+app.MapGet("/CellMatrixes", ([FromQuery] int idLocation, [FromQuery] int idCategory, AviApiContext context) =>
 {
     var baseLine = context.Matrices.Include(m => m.CellMatrices).OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
     var cellMatrix = baseLine.CellMatrices.FirstOrDefault(c => c.IdLocation == idLocation && c.IdCategory == idCategory);
