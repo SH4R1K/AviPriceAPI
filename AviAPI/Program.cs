@@ -22,26 +22,36 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-async Task GetPriceAsync(Matrix baseLine, int idLocation, int idCategory, AviApiContext context)
+async Task<CellMatrix?> GetPriceAsync(Matrix baseLine, int idLocation, int idCategory, AviApiContext context)
 {
-    while (true)
+    int newCategoryLocation = idCategory;
+    var location = context.Locations
+                        .FirstOrDefault(l => l.IdLocation == idLocation);
+    var category = context.Categories
+                        .FirstOrDefault(l => l.IdCategory == idCategory);
+    var oldCategory = category;
+    CellMatrix? result = null;
+    while (location != null)
     {
-        
+        do
+        {
+            result = baseLine.CellMatrices.FirstOrDefault(c => c.IdLocation == location.IdLocation && c.IdCategory == category.IdCategory);
+            if (result != null)
+                break;
+            category = context.Categories.FirstOrDefault(l => l.IdCategory == category.IdParentCategory);
+        } while (category != null);
+        if (result != null)
+            break;
+        location = context.Locations.FirstOrDefault(l => l.IdLocation == location.IdParentLocation);
+        category = oldCategory;
     }
+    return result;
 }
 
 app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int idCategory, AviApiContext context) =>
 {
     var baseLine = context.Matrices.Include(m => m.CellMatrices).OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
-    var cellMatrix = baseLine.CellMatrices.FirstOrDefault(c => c.IdLocation == idLocation && c.IdCategory == idCategory);
-    var location = context.Locations
-                        .Include(l => l.IdParentLocationNavigation)
-                        .ThenInclude(l => l.IdParentLocationNavigation)
-                        .FirstOrDefault(l => l.IdLocation == idLocation);
-    var category = context.Categories
-                        .Include(l => l.IdParentCategoryNavigation)
-                        .ThenInclude(l => l.IdParentCategoryNavigation)
-                        .FirstOrDefault(l => l.IdCategory == idCategory);
+    var cellMatrix = await GetPriceAsync(baseLine, idLocation, idCategory, context);
     if (cellMatrix != null)
         return new { baseLine.IdMatrix, cellMatrix.Price, cellMatrix.IdLocation, cellMatrix.IdCategory };
     return null;
