@@ -1,12 +1,10 @@
 ﻿@model AviPriceUI.Models.CellMatrix
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Добавление цены";
 }
 
-<h1>Create</h1>
-
-<h4>CellMatrix</h4>
+<h1>Добавление цены</h1>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -30,7 +28,7 @@
                 <select asp-for="IdMatrix" class ="form-control" asp-items="ViewBag.IdMatrix" hidden></select>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Добавить" class="btn btn-primary" />
                 <span class="text-danger">@Model.ErrorMessage</span>
             </div>
         </form>
@@ -38,7 +36,7 @@
 </div>
 
 <div>
-    <a asp-action="Index" asp-route-id="IdMatrix">Back to List</a>
+    <a asp-action="Index" asp-route-id="IdMatrix">Назад</a>
 </div>
 
 @section Scripts {
