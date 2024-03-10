@@ -24,7 +24,6 @@ if (app.Environment.IsDevelopment())
 
 async Task<CellMatrix?> GetPriceAsync(Matrix baseLine, int idLocation, int idCategory, AviApiContext context)
 {
-    int newCategoryLocation = idCategory;
     var location = context.Locations
                         .FirstOrDefault(l => l.IdLocation == idLocation);
     var category = context.Categories
@@ -33,13 +32,13 @@ async Task<CellMatrix?> GetPriceAsync(Matrix baseLine, int idLocation, int idCat
     CellMatrix? result = null;
     while (location != null)
     {
-        do
+        while (category != null) 
         {
             result = baseLine.CellMatrices.FirstOrDefault(c => c.IdLocation == location.IdLocation && c.IdCategory == category.IdCategory);
             if (result != null)
                 break;
             category = context.Categories.FirstOrDefault(l => l.IdCategory == category.IdParentCategory);
-        } while (category != null);
+        }
         if (result != null)
             break;
         location = context.Locations.FirstOrDefault(l => l.IdLocation == location.IdParentLocation);
@@ -48,7 +47,7 @@ async Task<CellMatrix?> GetPriceAsync(Matrix baseLine, int idLocation, int idCat
     return result;
 }
 
-app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int idCategory, AviApiContext context) =>
+app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int idCategory, [FromQuery] int? idUserSegment, AviApiContext context) =>
 {
     var baseLine = context.Matrices.Include(m => m.CellMatrices).OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
     var cellMatrix = await GetPriceAsync(baseLine, idLocation, idCategory, context);
