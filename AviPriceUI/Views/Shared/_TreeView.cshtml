@@ -1,0 +1,22 @@
+﻿@model AviPriceUI.Models.CategoryTreeNode
+
+@if (Model.Children != null && Model.Children.Any())
+{
+    <li>
+        <details>
+            <summary>@Model.Name</summary>
+                <ul>
+                    @foreach (var child in Model.Children)
+                    {
+                        <li>
+                            @Html.Partial("_TreeView", child)
+                        </li>
+                    }
+                </ul>
+        </details>
+    </li>
+}
+else
+{
+    <li>@Model.Name</li>
+}

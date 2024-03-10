@@ -1,0 +1,16 @@
+﻿@model IEnumerable<CategoryTreeNode>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+@foreach (var item in Model)
+{
+    <ul class="tree">
+        @Html.Partial("_TreeView", item)
+    </ul>
+}
+    
+

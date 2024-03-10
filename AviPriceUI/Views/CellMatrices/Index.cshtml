@@ -1,0 +1,35 @@
+﻿@model IEnumerable<AviPriceUI.Models.CellMatrix>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<form asp-action="Index">
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.IdCategoryNavigation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdLocationNavigation)
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.Price)
+			</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @Html.EditorFor(model => Model)
+    </tbody>
+</table>
+<footer>
+        <input type="submit" value="Сохранить" class="btn btn-primary" />
+</footer>
+</form>
