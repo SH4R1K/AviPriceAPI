@@ -8,7 +8,7 @@ public partial class Matrix
 {
     public int IdMatrix { get; set; }
 
-    [DisplayName("Имя матрица")]
+    [DisplayName("Имя матрицы")]
     public string Name { get; set; } = null!;
 
     [DisplayName("Сегмент пользователей")]
