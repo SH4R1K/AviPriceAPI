@@ -7,7 +7,7 @@
 <h1>Index</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" asp-route-id="@Model.FirstOrDefault().IdMatrix">Create New</a>
 </p>
 <form asp-action="Index">
 <table class="table">

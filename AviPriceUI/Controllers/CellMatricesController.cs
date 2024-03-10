@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using AviPriceUI.Data;
+using AviPriceUI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using AviPriceUI.Data;
-using AviPriceUI.Models;
 
 namespace AviPriceUI.Controllers
 {
@@ -34,7 +30,11 @@ namespace AviPriceUI.Controllers
         {
             _context.CellMatrices.UpdateRange(cellMatrices);
             _context.SaveChanges();
-            return View(cellMatrices);
+            var aviApiContext = _context.CellMatrices
+                .Include(c => c.IdCategoryNavigation)
+                .Include(c => c.IdLocationNavigation)
+                .Where(cm => cellMatrices.Select(c => c.IdCellMatrix).Contains(cm.IdCellMatrix));
+            return View(await aviApiContext.ToListAsync());
         }
 
 
@@ -60,12 +60,16 @@ namespace AviPriceUI.Controllers
         }
 
         // GET: CellMatrices/Create
-        public IActionResult Create()
+        public IActionResult Create(int id)
         {
-            ViewData["IdCategory"] = new SelectList(_context.Categories, "IdCategory", "IdCategory");
-            ViewData["IdLocation"] = new SelectList(_context.Locations, "IdLocation", "IdLocation");
+            ViewData["IdCategory"] = new SelectList(_context.Categories, "IdCategory", "Name");
+            ViewData["IdLocation"] = new SelectList(_context.Locations, "IdLocation", "Name");
             ViewData["IdMatrix"] = new SelectList(_context.Matrices, "IdMatrix", "IdMatrix");
-            return View();
+            var cellMatrix = new CellMatrix
+            {
+                IdMatrix = id
+            };
+            return View(cellMatrix);
         }
 
         // POST: CellMatrices/Create
@@ -75,16 +79,9 @@ namespace AviPriceUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("IdCellMatrix,Price,IdLocation,IdCategory,IdMatrix")] CellMatrix cellMatrix)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(cellMatrix);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["IdCategory"] = new SelectList(_context.Categories, "IdCategory", "IdCategory", cellMatrix.IdCategory);
-            ViewData["IdLocation"] = new SelectList(_context.Locations, "IdLocation", "IdLocation", cellMatrix.IdLocation);
-            ViewData["IdMatrix"] = new SelectList(_context.Matrices, "IdMatrix", "IdMatrix", cellMatrix.IdMatrix);
-            return View(cellMatrix);
+            _context.Add(cellMatrix);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index), "CellMatrices", new { id = cellMatrix.IdMatrix });
         }
 
         // GET: CellMatrices/Edit/5
