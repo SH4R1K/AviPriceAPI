@@ -1,40 +1,48 @@
-﻿@model IEnumerable<AviPriceUI.Models.Matrix>
+﻿@model MatricesViewModel
 
 @{
-    ViewData["Title"] = "Матрицы";
+    ViewData["Title"] = Model.MatricesType;
 }
 
-<h1>Матрицы</h1>
+<h1>@Model.MatricesType</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+@if(Model.MatricesType == "Скидочные матрицы")
+{
+    <p>
+        <a asp-action="Create">Создать новую</a>
+    </p>
+}
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Name)
+                <span class="text-black">Название матрицы</span>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.IdUserSegmentNavigation)
+                <span class="text-black">Сегмент пользователей</span>
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+@foreach (var item in Model.Matrices) {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.IdUserSegmentNavigation.IdUserSegment)
+                @Html.DisplayFor(modelItem => item.IdUserSegmentNavigation.Name)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.IdMatrix">Edit</a> |
-                <a asp-controller="CellMatrices" asp-action="Index" asp-route-id="@item.IdMatrix">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.IdMatrix">Delete</a>
-            </td>
+                    @if(Model.MatricesType == "История матриц")
+                    {
+                        <a asp-controller="CellMatrices" asp-action="IndexNotEdit" asp-route-id="@item.IdMatrix">Подробности</a>
+                    }
+                    else
+                    {
+                        <a asp-controller="CellMatrices" asp-action="Index" asp-route-id="@item.IdMatrix">Подробности</a>
+                    }
+                </td>
         </tr>
 }
     </tbody>

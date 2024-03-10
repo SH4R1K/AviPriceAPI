@@ -24,8 +24,16 @@ namespace AviPriceUI.Controllers
         {
             var aviApiContext = _context.Matrices.Include(m => m.IdUserSegmentNavigation).Where(m => id != 0 || id == 0 && m.IdUserSegment != null);
             var matriesList = await aviApiContext.ToListAsync();
+            var matricesViewModel = new MatricesViewModel
+            {
+                Matrices = matriesList
+            };
+            if (id == 0)
+                matricesViewModel.MatricesType = "Скидочные матрицы";
+            else
+                matricesViewModel.MatricesType = "История матриц";
             if (matriesList.Count > 0)
-                return View(matriesList);
+                return View(matricesViewModel);
             else
                 return NotFound();
         }

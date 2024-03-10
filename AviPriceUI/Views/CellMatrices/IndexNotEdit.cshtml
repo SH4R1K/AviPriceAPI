@@ -1,0 +1,41 @@
+﻿@model IEnumerable<CellMatrix>
+
+@{
+    ViewData["Title"] = "Матрица";
+}
+
+<h1>Матрица</h1>
+
+<form asp-action="Index">
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <span class="text-black">Категория</span>
+            </th>
+            <th>
+                    <span class="text-black">Локация</span>
+			</th>
+			<th>
+                    <span class="text-black">Цена</span>
+			</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.IdCategoryNavigation.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.IdLocationNavigation.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Price)
+                    </td>
+                </tr>
+            }
+    </tbody>
+</table>       
+</form>

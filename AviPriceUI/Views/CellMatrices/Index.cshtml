@@ -1,10 +1,10 @@
-﻿@model AviPriceUI.Models.MatrixViewModel
+﻿@model AviPriceUI.Models.CellMatrixesViewModel
 
 @{
-    ViewData["Title"] = "Основная матрица";
+    ViewData["Title"] = "Редактируемая матрица";
 }
 
-<h1>Основная матрица</h1>
+<h1>Редактируемая матрица</h1>
 
 <form asp-action="Index">
 <p>
@@ -12,6 +12,7 @@
 </p>
     <input name="submitButton" type="submit" value="Сохранить" class="btn btn-primary" />
     <span class="text-danger">@Model.ErrorMessage</span>
+    <input asp-for="@Model.IdUserSegment" type="hidden" />
 <table class="table">
     <thead>
         <tr>

@@ -37,12 +37,21 @@ namespace AviPriceUI.Controllers
             return await LoadData(id);
         }
 
+        public async Task<IActionResult> IndexNotEdit(int id)
+        {
+            var cellMatrices = _context.CellMatrices
+                .Include(cm => cm.IdCategoryNavigation)
+                .Include(cm => cm.IdLocationNavigation)
+                .Where(cm => cm.IdMatrix == id);
+            return View(await cellMatrices.ToListAsync());
+        }
+
         private async Task<IActionResult> LoadData(int id)
         {
             Matrix? matrix = _context.Matrices.OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
             if (id == -1 && matrix == null)
                 return NotFound();
-            if (_cells == null)
+            if (_cells == null || _cells.FirstOrDefault().IdMatrix != id)
             {
                 var cellMatrices = _context.CellMatrices
                                 .Include(c => c.IdCategoryNavigation)
@@ -52,14 +61,15 @@ namespace AviPriceUI.Controllers
                                             || id == -1 && cm.IdMatrix == matrix.IdMatrix);
                 _cells = await cellMatrices.ToListAsync();
             }
-            return View(new MatrixViewModel
+            return View(new CellMatrixesViewModel
             {
-                CellMatrices = _cells
+                CellMatrices = _cells,
+                IdUserSegment = _cells.FirstOrDefault().IdMatrixNavigation.IdUserSegment
             });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Index(MatrixViewModel matrixViewModel, string submitButton)
+        public async Task<IActionResult> Index(CellMatrixesViewModel matrixViewModel, string submitButton)
         {
             if (submitButton == null)
                 return View();
@@ -70,6 +80,7 @@ namespace AviPriceUI.Controllers
                 {
                     item.IdLocationNavigation = _context.Locations.FirstOrDefault(l => l.IdLocation == item.IdLocation);
                     item.IdCategoryNavigation = _context.Categories.FirstOrDefault(l => l.IdCategory == item.IdCategory);
+                    item.IdMatrixNavigation = _context.Matrices.FirstOrDefault(l => l.IdMatrix == item.IdMatrix);
                     existingCells.Add(item);
                 }
                 _cells = existingCells;
@@ -84,14 +95,16 @@ namespace AviPriceUI.Controllers
                     {
                         item.IdLocationNavigation = _context.Locations.FirstOrDefault(l => l.IdLocation == item.IdLocation);
                         item.IdCategoryNavigation = _context.Categories.FirstOrDefault(l => l.IdCategory == item.IdCategory);
+                        item.IdMatrixNavigation = _context.Matrices.FirstOrDefault(l => l.IdMatrix == item.IdMatrix);
                     }
                     return View(matrixViewModel);
                 }
                 var matrix = new Matrix
                 {
-                    Name = "baseline" + (_context.Matrices.OrderBy(m => m.IdMatrix).LastOrDefault().IdMatrix + 1)
+                    Name = (matrixViewModel.IdUserSegment == null ? "baseline" : "discountline") + (_context.Matrices.OrderBy(m => m.IdMatrix).LastOrDefault().IdMatrix + 1),
+                    IdUserSegment = matrixViewModel.IdUserSegment,
                 };
-                _context.Matrices.Add(matrix);
+                _context.Matrices.Add(matrix);  
                 _context.SaveChanges();
                 int id = _context.Matrices.FirstOrDefault(m => matrix.Name == m.Name).IdMatrix;
                 foreach (var item in matrixViewModel.CellMatrices)
@@ -160,6 +173,7 @@ namespace AviPriceUI.Controllers
             List<CellMatrix> existingCells = _cells ?? new List<CellMatrix>();
             cellMatrix.IdLocationNavigation = _context.Locations.FirstOrDefault(l => l.IdLocation == cellMatrix.IdLocation);
             cellMatrix.IdCategoryNavigation = _context.Categories.FirstOrDefault(l => l.IdCategory == cellMatrix.IdCategory);
+            cellMatrix.IdMatrixNavigation = _context.Matrices.FirstOrDefault(l => l.IdMatrix == cellMatrix.IdMatrix);
             existingCells.Add(cellMatrix);
             _cells = existingCells;
             return RedirectToAction(nameof(Index), "CellMatrices", new { id = cellMatrix.IdMatrix });
