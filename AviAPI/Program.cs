@@ -36,11 +36,9 @@ async Task<CellMatrix?> GetPriceAsync(Matrix baseLine, int idLocation, int idCat
         {
             result = baseLine.CellMatrices.FirstOrDefault(c => c.IdLocation == location.IdLocation && c.IdCategory == category.IdCategory);
             if (result != null)
-                break;
+                return result;
             category = context.Categories.FirstOrDefault(l => l.IdCategory == category.IdParentCategory);
         }
-        if (result != null)
-            break;
         location = context.Locations.FirstOrDefault(l => l.IdLocation == location.IdParentLocation);
         category = oldCategory;
     }
