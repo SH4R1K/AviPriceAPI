@@ -50,7 +50,7 @@ async Task<CellMatrix?> GetPriceAsync(Matrix baseLine, int idLocation, int idCat
 app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int idCategory, [FromQuery] int? idUserSegment, AviApiContext context) =>
 {
     var baseLine = context.Matrices.Include(m => m.CellMatrices).OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
-    var discountLines = context.Matrices.Include(m => m.CellMatrices).Where(m => m.IdUserSegment == idUserSegment).OrderByDescending(m => m.IdMatrix).ToList();
+    var discountLines = context.Matrices.Include(m => m.CellMatrices).Where(m => m.IdUserSegment != null).OrderByDescending(m => m.IdMatrix).ToList();
     CellMatrix? cellMatrix = null;
     if (discountLines.Count > 0)
     {
@@ -64,7 +64,7 @@ app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int i
     cellMatrix = await GetPriceAsync(baseLine, idLocation, idCategory, context);
     if (cellMatrix != null)
     {
-        return Results.Ok(new { baseLine.IdMatrix, cellMatrix.Price, cellMatrix.IdLocation, cellMatrix.IdCategory,  });
+        return Results.Ok(new { baseLine.IdMatrix, cellMatrix.Price, cellMatrix.IdLocation, cellMatrix.IdCategory, idUserSegment });
     }
     return Results.NotFound(null); 
 });
