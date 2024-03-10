@@ -18,11 +18,30 @@ namespace AviPriceUI.Controllers
         // GET: CellMatrices
         public async Task<IActionResult> Index(int id)
         {
-            var aviApiContext = _context.CellMatrices
+            var cellMatrices = _context.CellMatrices
                 .Include(c => c.IdCategoryNavigation)
                 .Include(c => c.IdLocationNavigation)
-                .Where(cm => cm.IdMatrixNavigation.IdMatrix == id);
-            return View(await aviApiContext.ToListAsync());
+                .Include(c => c.IdMatrixNavigation);
+            Matrix? matrix;
+            if (id > 0)
+                cellMatrices.Where(cm => cm.IdMatrixNavigation.IdMatrix == id);
+            else if (id == -1)
+            {
+                matrix = _context.Matrices.Where(m => m.IdUserSegment == null).OrderBy(m => m.IdMatrix).LastOrDefault();
+                if (matrix == null)
+                    return NotFound();
+                cellMatrices.Where(cm => cm.IdMatrix == matrix.IdMatrix);
+            }
+            else if (id == -2)
+            {
+                matrix = _context.Matrices.Where(m => m.IdUserSegment != null).OrderBy(m => m.IdMatrix).LastOrDefault();
+                if (matrix == null)
+                    return NotFound();
+                cellMatrices.Where(cm => cm.IdMatrix == matrix.IdMatrix);
+            }
+            else
+                return BadRequest();
+            return View(await cellMatrices.ToListAsync());
         }
 
         [HttpPost]
