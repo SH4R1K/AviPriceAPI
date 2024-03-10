@@ -24,22 +24,22 @@ if (app.Environment.IsDevelopment())
 
 async Task<CellMatrix?> GetPriceAsync(Matrix baseLine, int idLocation, int idCategory, AviApiContext context)
 {
-    var location = context.Locations
-                        .FirstOrDefault(l => l.IdLocation == idLocation);
-    var category = context.Categories
-                        .FirstOrDefault(l => l.IdCategory == idCategory);
+    var location = await context.Locations
+                        .FirstOrDefaultAsync(l => l.IdLocation == idLocation);
+    var category = await context.Categories
+                        .FirstOrDefaultAsync(l => l.IdCategory == idCategory);
     var oldCategory = category;
     CellMatrix? result = null;
     while (location != null)
     {
-        while (category != null) 
+        while (category != null)
         {
             result = baseLine.CellMatrices.FirstOrDefault(c => c.IdLocation == location.IdLocation && c.IdCategory == category.IdCategory);
             if (result != null)
                 return result;
-            category = context.Categories.FirstOrDefault(l => l.IdCategory == category.IdParentCategory);
+            category = await context.Categories.FirstOrDefaultAsync(l => l.IdCategory == category.IdParentCategory);
         }
-        location = context.Locations.FirstOrDefault(l => l.IdLocation == location.IdParentLocation);
+        location = await context.Locations.FirstOrDefaultAsync(l => l.IdLocation == location.IdParentLocation);
         category = oldCategory;
     }
     return result;
@@ -47,24 +47,21 @@ async Task<CellMatrix?> GetPriceAsync(Matrix baseLine, int idLocation, int idCat
 
 app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int idCategory, [FromQuery] int? idUserSegment, AviApiContext context) =>
 {
-    var baseLine = context.Matrices.Include(m => m.CellMatrices).OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
     var discountLines = context.Matrices.Include(m => m.CellMatrices).Where(m => m.IdUserSegment != null && m.IdUserSegment == idUserSegment).OrderByDescending(m => m.IdMatrix).ToList();
     CellMatrix? cellMatrix = null;
-    if (discountLines.Count > 0)
+    foreach (var discountLine in discountLines)
     {
-        foreach (var discountLine in discountLines)
-        {
-            cellMatrix = await GetPriceAsync(discountLine, idLocation, idCategory, context);
-            if (cellMatrix != null)
-                return Results.Ok(new { discountLine.IdMatrix, cellMatrix.Price, cellMatrix.IdLocation, cellMatrix.IdCategory, idUserSegment });
-        }
+        cellMatrix = await GetPriceAsync(discountLine, idLocation, idCategory, context);
+        if (cellMatrix != null)
+            return Results.Ok(new { discountLine.IdMatrix, cellMatrix.Price, cellMatrix.IdLocation, cellMatrix.IdCategory, idUserSegment });
     }
+    var baseLine = context.Matrices.Include(m => m.CellMatrices).OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
     cellMatrix = await GetPriceAsync(baseLine, idLocation, idCategory, context);
     if (cellMatrix != null)
     {
         return Results.Ok(new { baseLine.IdMatrix, cellMatrix.Price, cellMatrix.IdLocation, cellMatrix.IdCategory, idUserSegment });
     }
-    return Results.NotFound(null); 
+    return Results.NotFound(null);
 });
 
 
