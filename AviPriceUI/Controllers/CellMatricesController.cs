@@ -18,30 +18,30 @@ namespace AviPriceUI.Controllers
         // GET: CellMatrices
         public async Task<IActionResult> Index(int id)
         {
-            var cellMatrices = _context.CellMatrices
+            var cellMatrices = await _context.CellMatrices
                 .Include(c => c.IdCategoryNavigation)
                 .Include(c => c.IdLocationNavigation)
-                .Include(c => c.IdMatrixNavigation);
+                .Include(c => c.IdMatrixNavigation).ToListAsync();
             Matrix? matrix;
             if (id > 0)
                 cellMatrices.Where(cm => cm.IdMatrixNavigation.IdMatrix == id);
             else if (id == -1)
             {
-                matrix = _context.Matrices.Where(m => m.IdUserSegment == null).OrderBy(m => m.IdMatrix).LastOrDefault();
+                matrix = _context.Matrices.OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
                 if (matrix == null)
                     return NotFound();
-                cellMatrices.Where(cm => cm.IdMatrix == matrix.IdMatrix);
+                cellMatrices = cellMatrices.Where(cm => cm.IdMatrix == matrix.IdMatrix).ToList();
             }
             else if (id == -2)
             {
-                matrix = _context.Matrices.Where(m => m.IdUserSegment != null).OrderBy(m => m.IdMatrix).LastOrDefault();
+                matrix = _context.Matrices.OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment != null);
                 if (matrix == null)
                     return NotFound();
-                cellMatrices.Where(cm => cm.IdMatrix == matrix.IdMatrix);
+                cellMatrices = cellMatrices.Where(cm => cm.IdMatrix == matrix.IdMatrix).ToList();
             }
             else
                 return BadRequest();
-            return View(await cellMatrices.ToListAsync());
+            return View(cellMatrices);
         }
 
         [HttpPost]
