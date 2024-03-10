@@ -5,7 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddDbContext<AviApiContext>();
+builder.Services.AddDbContext<AviContext>();
 
 var app = builder.Build();
 

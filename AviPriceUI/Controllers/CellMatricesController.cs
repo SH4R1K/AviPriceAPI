@@ -8,9 +8,9 @@ namespace AviPriceUI.Controllers
 {
     public class CellMatricesController : Controller
     {
-        private readonly AviApiContext _context;
+        private readonly AviContext _context;
 
-        public CellMatricesController(AviApiContext context)
+        public CellMatricesController(AviContext context)
         {
             _context = context;
         }

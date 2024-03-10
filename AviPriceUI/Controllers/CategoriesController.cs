@@ -8,9 +8,9 @@ namespace AviPriceUI.Controllers
 {
     public class CategoriesController : Controller
     {
-        private readonly AviApiContext _context;
+        private readonly AviContext _context;
 
-        public CategoriesController(AviApiContext context)
+        public CategoriesController(AviContext context)
         {
             _context = context;
         }

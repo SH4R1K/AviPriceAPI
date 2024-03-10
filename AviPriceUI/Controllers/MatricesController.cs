@@ -12,9 +12,9 @@ namespace AviPriceUI.Controllers
 {
     public class MatricesController : Controller
     {
-        private readonly AviApiContext _context;
+        private readonly AviContext _context;
 
-        public MatricesController(AviApiContext context)
+        public MatricesController(AviContext context)
         {
             _context = context;
         }
@@ -48,7 +48,7 @@ namespace AviPriceUI.Controllers
         // GET: Matrices/Create
         public IActionResult Create()
         {
-            ViewData["IdUserSegment"] = new SelectList(_context.UserSegments, "IdUserSegment", "Name");
+            ViewData["IdUserSegment"] = new SelectList(_context.UserSegments, "IdUserSegment", "IdUserSegment");
             return View();
         }
 
@@ -65,7 +65,7 @@ namespace AviPriceUI.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IdUserSegment"] = new SelectList(_context.UserSegments, "IdUserSegment", "Name", matrix.IdUserSegment);
+            ViewData["IdUserSegment"] = new SelectList(_context.UserSegments, "IdUserSegment", "IdUserSegment", matrix.IdUserSegment);
             return View(matrix);
         }
 
