@@ -62,7 +62,7 @@ app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int i
         }
     }
     cellMatrix = await GetPriceAsync(baseLine, idLocation, idCategory, context);
-    if (cellMatrix == null)
+    if (cellMatrix != null)
     {
         return Results.Ok(new { baseLine.IdMatrix, cellMatrix.Price, cellMatrix.IdLocation, cellMatrix.IdCategory,  });
     }
