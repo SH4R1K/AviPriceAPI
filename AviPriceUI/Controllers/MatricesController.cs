@@ -20,11 +20,16 @@ namespace AviPriceUI.Controllers
         }
 
         // GET: Matrices
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? id)
         {
-            var aviApiContext = _context.Matrices.Include(m => m.IdUserSegmentNavigation);
-            return View(await aviApiContext.ToListAsync());
+            var aviApiContext = _context.Matrices.Include(m => m.IdUserSegmentNavigation).Where(m => id != 0 || id == 0 && m.IdUserSegment != null);
+            var matriesList = await aviApiContext.ToListAsync();
+            if (matriesList.Count > 0)
+                return View(matriesList);
+            else
+                return NotFound();
         }
+
 
         // GET: Matrices/Details/5
         public async Task<IActionResult> Details(int? id)

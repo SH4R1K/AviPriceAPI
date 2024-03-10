@@ -1,35 +1,34 @@
-﻿@model IEnumerable<AviPriceUI.Models.CellMatrix>
+﻿@model AviPriceUI.Models.MatrixViewModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Основная матрица";
 }
 
-<h1>Index</h1>
+<h1>Основная матрица</h1>
 
-<p>
-    <a asp-action="Create" asp-route-id="@Model.FirstOrDefault().IdMatrix">Create New</a>
-</p>
 <form asp-action="Index">
+<p>
+    <input name="submitButton" value="Добавить цену" type="submit"/>
+</p>
+    <input name="submitButton" type="submit" value="Сохранить" class="btn btn-primary" />
+    <span class="text-danger">@Model.ErrorMessage</span>
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.IdCategoryNavigation)
+                <span class="text-black">Категория</span>
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.IdLocationNavigation)
+                    <span class="text-black">Локация</span>
 			</th>
 			<th>
-				@Html.DisplayNameFor(model => model.Price)
+                    <span class="text-black">Цена</span>
 			</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-        @Html.EditorFor(model => Model)
+        @Html.EditorFor(model => Model.CellMatrices)
     </tbody>
-</table>
-<footer>
-        <input type="submit" value="Сохранить" class="btn btn-primary" />
-</footer>
+</table>       
 </form>

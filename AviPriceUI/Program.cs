@@ -5,6 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddDbContext<AviContext>();
 
 var app = builder.Build();
@@ -22,6 +24,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Matrices}/{action=Index}/{id?}");
+    pattern: "{controller=CellMatrices}/{action=Index}/{id=-1}");
 
 app.Run();
