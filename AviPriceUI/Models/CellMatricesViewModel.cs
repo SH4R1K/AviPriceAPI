@@ -12,5 +12,9 @@ namespace AviPriceUI.Models
         public int? IdUserSegment { get; set; } = null;
 
         public string MatrixName { get; set; }
+
+        public string SearchLocationText { get; set; }
+
+        public string SearchCategoryText { get; set; }
     }
 }
