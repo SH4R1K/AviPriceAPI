@@ -67,7 +67,17 @@ namespace AviPriceUI.Controllers
             Matrix? matrix = _context.Matrices.OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
             if (id == -1 && matrix == null)
                 return NotFound();
-            if ((_cells == null || _cells.Count == 0) && id == -1 || (_cells != null && _cells.Count != 0) && _cells.FirstOrDefault().IdMatrix != id)
+            if (id != -1 && !_context.Matrices.Any(m => m.IdMatrix == id))
+            {
+                ViewData["IdUserSegment"] = new SelectList(_context.UserSegments, "IdUserSegment", "Name");
+                return View(new CellMatricesViewModel
+                {
+                    CellMatrices = _cells,
+                    IdUserSegment = 0,
+                    MatrixName = "Новая матрица"
+                });
+            }
+            else if ((_cells == null || _cells.Count == 0) && id == -1 || (_cells != null && _cells.Count != 0) && _cells.FirstOrDefault().IdMatrix != id)
             {
                 var cellMatrices = _context.CellMatrices
                                 .Include(c => c.IdCategoryNavigation)

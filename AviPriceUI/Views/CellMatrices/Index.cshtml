@@ -12,8 +12,18 @@
 </p>
     <input name="submitButton" type="submit" value="Сохранить" class="btn btn-primary" />
     <span class="text-danger">@Model.ErrorMessage</span>
-    <input asp-for="@Model.IdUserSegment" type="hidden" />
-<table class="table">
+    @if(Model.IdUserSegment == 0)
+    {
+        <div class="form-group">
+            <label asp-for="@Model.IdUserSegment" class="control-label"/>
+            <select asp-for="@Model.IdUserSegment" asp-items="ViewBag.IdUserSegment" class="form-control"/>
+        </div>
+    }
+    else
+    {
+        <input asp-for="@Model.IdUserSegment" class="form-control" type="hidden" />
+    }
+    <table class="table">
     <thead>
         <tr>
             <th>
