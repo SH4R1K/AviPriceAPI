@@ -70,9 +70,10 @@ namespace AviPriceUI.Controllers
             if (id != -1 && !_context.Matrices.Any(m => m.IdMatrix == id))
             {
                 ViewData["IdUserSegment"] = new SelectList(_context.UserSegments, "IdUserSegment", "Name");
+                _idMatrix = id;
                 return View(new CellMatricesViewModel
                 {
-                    CellMatrices = _cells,
+                    CellMatrices = _cells.All(m => m.IdMatrix == id) ? _cells : null,
                     IdUserSegment = 0,
                     MatrixName = "Новая матрица"
                 });
@@ -211,7 +212,7 @@ namespace AviPriceUI.Controllers
             cellMatrix.IdMatrixNavigation = _context.Matrices.FirstOrDefault(l => l.IdMatrix == cellMatrix.IdMatrix);
             existingCells.Add(cellMatrix);
             _cells = existingCells;
-            return RedirectToAction(nameof(Index), "CellMatrices", new { id = cellMatrix.IdMatrix });
+            return RedirectToAction(nameof(Index), "CellMatrices", new { id = _idMatrix });
         }
 
         // GET: CellMatrices/Edit/5

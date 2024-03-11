@@ -61,8 +61,8 @@ namespace AviPriceUI.Controllers
         // GET: Matrices/Create
         public IActionResult Create()
         {
-            ViewData["IdUserSegment"] = new SelectList(_context.UserSegments, "IdUserSegment", "IdUserSegment");
-            return View();
+            var idMatrix = _context.Matrices.OrderBy(m => m.IdMatrix).LastOrDefault().IdMatrix + 1;
+            return RedirectToAction("Index", "CellMatrices", new { id = idMatrix });
         }
 
         // POST: Matrices/Create

@@ -7,33 +7,37 @@
 <h1>@Model.MatrixName</h1>
 
 <form asp-action="Index">
+    <div class="form-group">
 <p>
     <input name="submitButton" value="Добавить цену" type="submit"/>
 </p>
+    <div class="form-group">
     <input name="submitButton" type="submit" value="Сохранить" class="btn btn-primary" />
     <span class="text-danger">@Model.ErrorMessage</span>
+    </div>
     @if(Model.IdUserSegment == 0)
     {
         <div class="form-group">
-            <label asp-for="@Model.IdUserSegment" class="control-label"/>
-            <select asp-for="@Model.IdUserSegment" asp-items="ViewBag.IdUserSegment" class="form-control"/>
+            <label asp-for="@Model.IdUserSegment" class="control-label" />
+            <select asp-for="IdUserSegment" asp-items="ViewBag.IdUserSegment" class="form-control"/>
         </div>
     }
     else
     {
         <input asp-for="@Model.IdUserSegment" class="form-control" type="hidden" />
     }
+    <div class="form-group">
     <table class="table">
     <thead>
         <tr>
             <th>
-                <span class="text-black">Категория</span>
+                <label class="text-black">Категория</label>
             </th>
             <th>
-                    <span class="text-black">Локация</span>
+                    <label class="text-black">Локация</label>
 			</th>
 			<th>
-                    <span class="text-black">Цена</span>
+                    <label class="text-black">Цена</label>
 			</th>
             <th></th>
         </tr>
@@ -41,5 +45,7 @@
     <tbody>
         @Html.EditorFor(model => Model.CellMatrices)
     </tbody>
-</table>       
+</table>    
+</div>
+</div>
 </form>
