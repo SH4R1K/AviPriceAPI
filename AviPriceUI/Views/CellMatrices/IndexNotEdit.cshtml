@@ -1,10 +1,10 @@
-﻿@model IEnumerable<CellMatrix>
+﻿@model CellMatricesViewModel
 
 @{
-    ViewData["Title"] = "Матрица";
+    ViewData["Title"] = Model.MatrixName;
 }
 
-<h1>Матрица</h1>
+<h1>@Model.MatrixName</h1>
 
 <form asp-action="Index">
 <table class="table">
@@ -22,7 +22,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var item in Model.CellMatrices)
             {
                 <tr>
                     <td>
