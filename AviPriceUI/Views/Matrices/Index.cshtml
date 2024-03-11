@@ -11,7 +11,35 @@
     <p>
         <a asp-action="Create">Создать новую</a>
     </p>
+    <form asp-controller="Matrices" asp-action="Index" asp-route-id="0">
+        <div class="row">
+            <div class="col-md-4 d-flex">
+                <input asp-for="SearchNameText" type="text" class="form-control" placeholder="Search...">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+            <div class="col-md-4 d-flex">
+                <input asp-for="SearchUserSegmentText" type="text" class="form-control" placeholder="Search...">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </div>
+    </form>
 }
+else
+{
+    <form asp-controller="Matrices" asp-action="Index" asp-route-id="1">
+        <div class="row">
+            <div class="col-md-4 d-flex">
+                <input asp-for="SearchNameText" type="text" class="form-control" placeholder="Search...">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+            <div class="col-md-4 d-flex">
+                <input asp-for="SearchUserSegmentText" type="text" class="form-control" placeholder="Search...">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </div>
+    </form>
+}
+
 <table class="table">
     <thead>
         <tr>
@@ -45,5 +73,5 @@
                 </td>
         </tr>
 }
-    </tbody>
-</table>
+        </tbody>
+    </table>

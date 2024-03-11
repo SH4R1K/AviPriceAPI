@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AviPriceUI.Data;
 using AviPriceUI.Models;
+using Microsoft.IdentityModel.Tokens;
 
 namespace AviPriceUI.Controllers
 {
@@ -80,6 +81,28 @@ namespace AviPriceUI.Controllers
             }
             ViewData["IdUserSegment"] = new SelectList(_context.UserSegments, "IdUserSegment", "IdUserSegment", matrix.IdUserSegment);
             return View(matrix);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Index(int? id, MatricesViewModel matricesViewModel)
+        {
+            if (matricesViewModel.SearchNameText == null)
+                matricesViewModel.SearchNameText = "";
+            if (matricesViewModel.SearchUserSegmentText == null)
+                matricesViewModel.SearchUserSegmentText = "";
+            var aviApiContext = _context.Matrices
+                .Include(m => m.IdUserSegmentNavigation)
+                .Where(m => id != 0 || id == 0 && m.IdUserSegment != null)
+                .Where(m => m.Name.Contains(matricesViewModel.SearchNameText))
+                .Where(m => m.IdUserSegmentNavigation == null && matricesViewModel.SearchUserSegmentText.IsNullOrEmpty() 
+                || m.IdUserSegmentNavigation.Name.Contains(matricesViewModel.SearchUserSegmentText));
+            var matriesList = await aviApiContext.ToListAsync();
+            matricesViewModel.Matrices = matriesList;
+            if (id == 0)
+                matricesViewModel.MatricesType = "Скидочные матрицы";
+            else
+                matricesViewModel.MatricesType = "История матриц";
+            return View(matricesViewModel);
         }
 
         // GET: Matrices/Edit/5
