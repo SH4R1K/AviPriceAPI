@@ -9,11 +9,9 @@ public partial class Category
 
     public string Name { get; set; } = null!;
 
-    public int? IdParentCategory { get; set; }
+    public virtual ICollection<CategoryTreePath> CategoryTreePathAncestorNavigations { get; set; } = new List<CategoryTreePath>();
+
+    public virtual ICollection<CategoryTreePath> CategoryTreePathDescendantNavigations { get; set; } = new List<CategoryTreePath>();
 
     public virtual ICollection<CellMatrix> CellMatrices { get; set; } = new List<CellMatrix>();
-
-    public virtual Category? IdParentCategoryNavigation { get; set; }
-
-    public virtual ICollection<Category> InverseIdParentCategoryNavigation { get; set; } = new List<Category>();
 }

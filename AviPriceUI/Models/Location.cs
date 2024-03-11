@@ -9,11 +9,9 @@ public partial class Location
 
     public string Name { get; set; } = null!;
 
-    public int? IdParentLocation { get; set; }
-
     public virtual ICollection<CellMatrix> CellMatrices { get; set; } = new List<CellMatrix>();
 
-    public virtual Location? IdParentLocationNavigation { get; set; }
+    public virtual ICollection<LocationTreePath> LocationTreePathAncestorNavigations { get; set; } = new List<LocationTreePath>();
 
-    public virtual ICollection<Location> InverseIdParentLocationNavigation { get; set; } = new List<Location>();
+    public virtual ICollection<LocationTreePath> LocationTreePathDescendantNavigations { get; set; } = new List<LocationTreePath>();
 }
