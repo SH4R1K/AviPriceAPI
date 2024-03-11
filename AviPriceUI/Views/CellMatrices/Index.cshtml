@@ -5,8 +5,10 @@
 }
 
 <h1>@Model.MatrixName</h1>
+<hr />
 
 <form asp-action="Index">
+  
     <div class="form-group">
 <p>
     <input name="submitButton" value="Добавить цену" type="submit"/>
@@ -18,14 +20,14 @@
     @if(Model.IdUserSegment == 0)
     {
         <div class="form-group">
-            <label asp-for="@Model.IdUserSegment" class="control-label" />
-            <select asp-for="IdUserSegment" asp-items="ViewBag.IdUserSegment" class="form-control"/>
+                        <label asp-for="@Model.IdUserSegment" class="control-label"></label>
+                        <select asp-for="IdUserSegment" class="form-control" asp-items="ViewBag.IdUserSegment"></select>
         </div>
     }
     else
     {
-        <input asp-for="@Model.IdUserSegment" class="form-control" type="hidden" />
-    }
+        <input asp-for="@Model.IdUserSegment" type="hidden" />
+    } 
     <div class="form-group">
     <table class="table">
     <thead>

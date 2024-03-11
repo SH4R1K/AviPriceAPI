@@ -1,4 +1,6 @@
-﻿namespace AviPriceUI.Models
+﻿using System.ComponentModel;
+
+namespace AviPriceUI.Models
 {
     public class CellMatricesViewModel
     {
@@ -6,6 +8,7 @@
 
         public string ErrorMessage { get; set; }
 
+        [DisplayName("Сегмент пользователей")]
         public int? IdUserSegment { get; set; } = null;
 
         public string MatrixName { get; set; }

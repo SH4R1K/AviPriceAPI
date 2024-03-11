@@ -71,14 +71,17 @@ namespace AviPriceUI.Controllers
             {
                 ViewData["IdUserSegment"] = new SelectList(_context.UserSegments, "IdUserSegment", "Name");
                 _idMatrix = id;
-                return View(new CellMatricesViewModel
+                if (!_cells.All(m => m.IdMatrix == id))
+                    _cells = null;
+                var cellMatricesViewModel = new CellMatricesViewModel
                 {
-                    CellMatrices = _cells.All(m => m.IdMatrix == id) ? _cells : null,
+                    CellMatrices = _cells,
                     IdUserSegment = 0,
                     MatrixName = "Новая матрица"
-                });
+                };
+                return View(cellMatricesViewModel);
             }
-            else if ((_cells == null || _cells.Count == 0) && id == -1 || (_cells != null && _cells.Count != 0) && _cells.FirstOrDefault().IdMatrix != id)
+            else if ((_cells == null || _cells.Count == 0) ||  _cells.FirstOrDefault().IdMatrix != id)
             {
                 var cellMatrices = _context.CellMatrices
                                 .Include(c => c.IdCategoryNavigation)
@@ -90,7 +93,7 @@ namespace AviPriceUI.Controllers
                 _idMatrix = _cells.FirstOrDefault().IdMatrix;
             }
             var currentMatrix = _context.Matrices.FirstOrDefault(m => m.IdMatrix == _idMatrix);
-            return View(new CellMatricesViewModel
+           return View(new CellMatricesViewModel
             {
                 CellMatrices = _cells,
                 IdUserSegment = currentMatrix.IdUserSegment,
@@ -151,7 +154,7 @@ namespace AviPriceUI.Controllers
                 _context.CellMatrices.AddRange(matrixViewModel.CellMatrices);
                 _context.SaveChanges();
                 _cells = null;
-                return await LoadData(matrixViewModel.CellMatrices.FirstOrDefault().IdMatrix);
+                return await LoadData(_context.Matrices.FirstOrDefault(m => m.Name == matrix.Name).IdMatrix);
             }
         }
 
@@ -197,7 +200,7 @@ namespace AviPriceUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("IdCellMatrix,Price,IdLocation,IdCategory,IdMatrix")] CellMatrix cellMatrix)
         {
-            if (_cells.Any(cm => cm.IdCategory == cellMatrix.IdCategory && cm.IdLocation == cellMatrix.IdLocation))
+            if (_cells != null && _cells.Any(cm => cm.IdCategory == cellMatrix.IdCategory && cm.IdLocation == cellMatrix.IdLocation))
             {
                 cellMatrix.ErrorMessage = "Такая уже цена существует";
                 ViewData["IdCategory"] = new SelectList(_context.Categories, "IdCategory", "Name");
@@ -209,7 +212,8 @@ namespace AviPriceUI.Controllers
             List<CellMatrix> existingCells = _cells ?? new List<CellMatrix>();
             cellMatrix.IdLocationNavigation = _context.Locations.FirstOrDefault(l => l.IdLocation == cellMatrix.IdLocation);
             cellMatrix.IdCategoryNavigation = _context.Categories.FirstOrDefault(l => l.IdCategory == cellMatrix.IdCategory);
-            cellMatrix.IdMatrixNavigation = _context.Matrices.FirstOrDefault(l => l.IdMatrix == cellMatrix.IdMatrix);
+            //cellMatrix.IdMatrixNavigation = _context.Matrices.FirstOrDefault(l => l.IdMatrix == cellMatrix.IdMatrix);
+            cellMatrix.IdMatrix = _idMatrix ?? cellMatrix.IdMatrix;
             existingCells.Add(cellMatrix);
             _cells = existingCells;
             return RedirectToAction(nameof(Index), "CellMatrices", new { id = _idMatrix });
