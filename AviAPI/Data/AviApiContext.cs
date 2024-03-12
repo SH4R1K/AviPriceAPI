@@ -72,6 +72,8 @@ public partial class AviApiContext : DbContext
 
             entity.ToTable("CellMatrix");
 
+            entity.HasIndex(e => new { e.IdLocation, e.IdCategory, e.IdMatrix }, "UQ_CellMatrix").IsUnique();
+
             entity.Property(e => e.Price).HasColumnType("decimal(7, 2)");
 
             entity.HasOne(d => d.IdCategoryNavigation).WithMany(p => p.CellMatrices)
