@@ -12,6 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AviApiContext>();
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 
@@ -24,9 +25,15 @@ if (app.Environment.IsDevelopment())
 
 async Task<CellMatrix?> GetPriceAsync(Matrix baseLine, int idLocation, int idCategory, AviApiContext context)
 {
-    var locationParents = context.LocationTreePaths.OrderBy(l => l.Depth).Where(l => l.Descendant == idLocation).ToList();
-    var categoriesParents = context.CategoryTreePaths.OrderBy(c => c.Depth).Where(c => c.Descendant == idCategory).ToList();
-    var result = baseLine.CellMatrices.FirstOrDefault(cm => locationParents.Any(l => cm.IdLocation == l.Ancestor) && categoriesParents.Any(c => cm.IdCategory == c.Ancestor));
+    var locationParents = await context.LocationTreePaths
+        .AsNoTracking()
+        .OrderBy(l => l.Depth)
+        .Where(l => l.Descendant == idLocation).Select(l => l.Ancestor).ToListAsync();
+    var categoriesParents = await context.CategoryTreePaths
+        .AsNoTracking()
+        .OrderBy(c => c.Depth)
+        .Where(c => c.Descendant == idCategory).Select(l => l.Ancestor).ToListAsync();
+    var result = baseLine.CellMatrices.Where(cm => locationParents.Contains(cm.IdLocation) && categoriesParents.Contains(cm.IdCategory)).FirstOrDefault();
     return result;
 }
 
@@ -40,7 +47,7 @@ app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int i
         if (cellMatrix != null)
             return Results.Ok(new { discountLine.IdMatrix, cellMatrix.Price, cellMatrix.IdLocation, cellMatrix.IdCategory, idUserSegment });
     }
-    var baseLine = context.Matrices.Include(m => m.CellMatrices).OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
+    var baseLine = context.Matrices.AsNoTracking().Include(m => m.CellMatrices).OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
     cellMatrix = await GetPriceAsync(baseLine, idLocation, idCategory, context);
     if (cellMatrix != null)
     {
