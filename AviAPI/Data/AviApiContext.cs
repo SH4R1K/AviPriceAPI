@@ -18,9 +18,13 @@ public partial class AviApiContext : DbContext
 
     public virtual DbSet<Category> Categories { get; set; }
 
+    public virtual DbSet<CategoryTreePath> CategoryTreePaths { get; set; }
+
     public virtual DbSet<CellMatrix> CellMatrices { get; set; }
 
     public virtual DbSet<Location> Locations { get; set; }
+
+    public virtual DbSet<LocationTreePath> LocationTreePaths { get; set; }
 
     public virtual DbSet<Matrix> Matrices { get; set; }
 
@@ -38,11 +42,28 @@ public partial class AviApiContext : DbContext
 
             entity.ToTable("Category");
 
-            entity.Property(e => e.Name).HasMaxLength(30);
+            entity.Property(e => e.Name).HasMaxLength(50);
+        });
 
-            entity.HasOne(d => d.IdParentCategoryNavigation).WithMany(p => p.InverseIdParentCategoryNavigation)
-                .HasForeignKey(d => d.IdParentCategory)
-                .HasConstraintName("FK_Category_Category");
+        modelBuilder.Entity<CategoryTreePath>(entity =>
+        {
+            entity.HasKey(e => new { e.Ancestor, e.Descendant });
+
+            entity.ToTable("CategoryTreePath");
+
+            entity.Property(e => e.Ancestor).HasColumnName("ancestor");
+            entity.Property(e => e.Descendant).HasColumnName("descendant");
+            entity.Property(e => e.Depth).HasColumnName("depth");
+
+            entity.HasOne(d => d.AncestorNavigation).WithMany(p => p.CategoryTreePathAncestorNavigations)
+                .HasForeignKey(d => d.Ancestor)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CategoryTreePath_Category");
+
+            entity.HasOne(d => d.DescendantNavigation).WithMany(p => p.CategoryTreePathDescendantNavigations)
+                .HasForeignKey(d => d.Descendant)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CategoryTreePath_Category1");
         });
 
         modelBuilder.Entity<CellMatrix>(entity =>
@@ -75,11 +96,28 @@ public partial class AviApiContext : DbContext
 
             entity.ToTable("Location");
 
-            entity.Property(e => e.Name).HasMaxLength(30);
+            entity.Property(e => e.Name).HasMaxLength(50);
+        });
 
-            entity.HasOne(d => d.IdParentLocationNavigation).WithMany(p => p.InverseIdParentLocationNavigation)
-                .HasForeignKey(d => d.IdParentLocation)
-                .HasConstraintName("FK_Location_Location");
+        modelBuilder.Entity<LocationTreePath>(entity =>
+        {
+            entity.HasKey(e => new { e.Ancestor, e.Descendant });
+
+            entity.ToTable("LocationTreePath");
+
+            entity.Property(e => e.Ancestor).HasColumnName("ancestor");
+            entity.Property(e => e.Descendant).HasColumnName("descendant");
+            entity.Property(e => e.Depth).HasColumnName("depth");
+
+            entity.HasOne(d => d.AncestorNavigation).WithMany(p => p.LocationTreePathAncestorNavigations)
+                .HasForeignKey(d => d.Ancestor)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_LocationTreePath_Location");
+
+            entity.HasOne(d => d.DescendantNavigation).WithMany(p => p.LocationTreePathDescendantNavigations)
+                .HasForeignKey(d => d.Descendant)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_LocationTreePath_Location1");
         });
 
         modelBuilder.Entity<Matrix>(entity =>
@@ -88,7 +126,7 @@ public partial class AviApiContext : DbContext
 
             entity.ToTable("Matrix");
 
-            entity.Property(e => e.Name).HasMaxLength(30);
+            entity.Property(e => e.Name).HasMaxLength(50);
 
             entity.HasOne(d => d.IdUserSegmentNavigation).WithMany(p => p.Matrices)
                 .HasForeignKey(d => d.IdUserSegment)
@@ -101,7 +139,7 @@ public partial class AviApiContext : DbContext
 
             entity.ToTable("UserSegment");
 
-            entity.Property(e => e.Name).HasMaxLength(30);
+            entity.Property(e => e.Name).HasMaxLength(50);
         });
 
         OnModelCreatingPartial(modelBuilder);
