@@ -59,7 +59,10 @@ else
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.IdUserSegmentNavigation.Name)
+                @if(item.IdUserSegmentNavigation != null)
+                {
+                    @Html.DisplayFor(modelItem => item.IdUserSegmentNavigation.Name)
+                }
             </td>
             <td>
                     @if(Model.MatricesType == "История матриц")

@@ -189,7 +189,9 @@ namespace AviPriceUI.Controllers
                 return View(new CellMatricesViewModel
                 {
                     CellMatrices = _cells.Where(cm => cm.IdCategoryNavigation.Name.Contains(matrixViewModel.SearchCategoryText))
-                                    .Where(cm => cm.IdLocationNavigation.Name.Contains(matrixViewModel.SearchLocationText)),
+                                    .Where(cm => cm.IdLocationNavigation.Name.Contains(matrixViewModel.SearchLocationText))
+                                    .Skip((_pageIndex - 1) * pageSize)
+                                    .Take(pageSize),
                     IdUserSegment = currentMatrix.IdUserSegment,
                     MatrixName = currentMatrix.Name,
                     PageCount = (int)Math.Ceiling((double)_cells.Where(cm => cm.IdCategoryNavigation.Name.Contains(matrixViewModel.SearchCategoryText))
@@ -245,7 +247,12 @@ namespace AviPriceUI.Controllers
                     item.IdCategoryNavigation = _context.Categories.FirstOrDefault(l => l.IdCategory == item.IdCategory);
                     item.IdMatrixNavigation = _context.Matrices.FirstOrDefault(l => l.IdMatrix == item.IdMatrix);
                 }
-                _pageIndex = Convert.ToInt32(submitButton);
+                int pageCount = (int)Math.Ceiling((double)_cells.Where(cm => cm.IdCategoryNavigation.Name.Contains(matrixViewModel.SearchCategoryText))
+                                    .Where(cm => cm.IdLocationNavigation.Name.Contains(matrixViewModel.SearchLocationText)).Count() / pageSize);
+                if (submitButton == "Назад" && _pageIndex > 1)
+                    _pageIndex = _pageIndex - 1;  
+                if (submitButton == "Вперед" && _pageIndex < pageCount)
+                    _pageIndex = _pageIndex + 1;
                 var currentMatrix = _context.Matrices.FirstOrDefault(m => m.IdMatrix == _idMatrix);
                 return View(new CellMatricesViewModel
                 {
@@ -255,8 +262,7 @@ namespace AviPriceUI.Controllers
                                     .Take(pageSize),
                     IdUserSegment = currentMatrix.IdUserSegment,
                     MatrixName = currentMatrix.Name,
-                    PageCount = (int)Math.Ceiling((double)_cells.Where(cm => cm.IdCategoryNavigation.Name.Contains(matrixViewModel.SearchCategoryText))
-                                    .Where(cm => cm.IdLocationNavigation.Name.Contains(matrixViewModel.SearchLocationText)).Count() / pageSize),
+                    PageCount = pageCount,
                     PageIndex = _pageIndex
                 });
             }
