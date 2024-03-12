@@ -68,11 +68,31 @@ namespace AviPriceUI.Controllers
             var cellMatrices = await _context.CellMatrices
                 .Include(cm => cm.IdCategoryNavigation)
                 .Include(cm => cm.IdLocationNavigation)
-                .Where(cm => cm.IdMatrix == id).ToListAsync();
+                .Where(cm => cm.IdMatrix == id)
+                .ToListAsync();
+            _idMatrix = id;
             return View(new CellMatricesViewModel
             {
                 CellMatrices = cellMatrices,
                 MatrixName = _context.Matrices.FirstOrDefault(m => m.IdMatrix == id).Name
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> IndexNotEdit(CellMatricesViewModel cellMatricesViewModel)
+        {
+            var cellMatrices = await _context.CellMatrices
+                .Include(cm => cm.IdCategoryNavigation)
+                .Include(cm => cm.IdLocationNavigation)
+                .Where(cm => cm.IdMatrix == _idMatrix)
+                .Where(cm => cm.IdCategoryNavigation.Name.Contains(cellMatricesViewModel.SearchCategoryText))
+                .Where(cm => cm.IdLocationNavigation.Name.Contains(cellMatricesViewModel.SearchLocationText))
+                .ToListAsync();
+                
+            return View(new CellMatricesViewModel
+            {
+                CellMatrices = cellMatrices,
+                MatrixName = _context.Matrices.FirstOrDefault(m => m.IdMatrix == _idMatrix).Name
             });
         }
 
@@ -141,10 +161,6 @@ namespace AviPriceUI.Controllers
             }
             else if (submitButton == "Искать")
             {
-                if (matrixViewModel.SearchCategoryText == null)
-                    matrixViewModel.SearchCategoryText = "";
-                if (matrixViewModel.SearchLocationText == null)
-                    matrixViewModel.SearchLocationText = "";
                 Matrix? matrix = _context.Matrices.OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
                 if (!_context.Matrices.Any(m => m.IdMatrix == _idMatrix))
                 {
@@ -222,10 +238,6 @@ namespace AviPriceUI.Controllers
             }
             else 
             {
-                if (matrixViewModel.SearchCategoryText == null)
-                    matrixViewModel.SearchCategoryText = "";
-                if (matrixViewModel.SearchLocationText == null)
-                    matrixViewModel.SearchLocationText = "";
                 CellsUpdate(matrixViewModel, matrixViewModel.CellMatrices.FirstOrDefault().IdMatrix);
                 foreach (var item in matrixViewModel.CellMatrices)
                 {

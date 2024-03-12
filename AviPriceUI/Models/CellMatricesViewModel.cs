@@ -4,6 +4,9 @@ namespace AviPriceUI.Models
 {
     public class CellMatricesViewModel
     {
+        private string searchLocationText;
+        private string searchCategoryText;
+
         public IEnumerable<CellMatrix> CellMatrices { get; set; }
 
         public string ErrorMessage { get; set; }
@@ -13,9 +16,23 @@ namespace AviPriceUI.Models
 
         public string MatrixName { get; set; }
 
-        public string SearchLocationText { get; set; }
+        public string SearchLocationText 
+        {
+            get
+            {
+                return searchLocationText ?? "";
+            }
+            set => searchLocationText = value; 
+        }
 
-        public string SearchCategoryText { get; set; }
+        public string SearchCategoryText 
+        {
+            get 
+            { 
+                return searchCategoryText ?? ""; 
+            } 
+            set => searchCategoryText = value; 
+        }
 
         public int PageCount { get; set; }
 
