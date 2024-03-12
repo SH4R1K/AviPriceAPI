@@ -24,10 +24,9 @@ if (app.Environment.IsDevelopment())
 
 async Task<CellMatrix?> GetPriceAsync(Matrix baseLine, int idLocation, int idCategory, AviApiContext context)
 {
-    CellMatrix? result = null;
     var locationParents = context.LocationTreePaths.OrderBy(l => l.Depth).Where(l => l.Descendant == idLocation).ToList();
     var categoriesParents = context.CategoryTreePaths.OrderBy(c => c.Depth).Where(c => c.Descendant == idCategory).ToList();
-    result = baseLine.CellMatrices.FirstOrDefault(cm => locationParents.Any(l => cm.IdLocation == l.Descendant) && categoriesParents.Any(c => cm.IdCategory == c.Descendant));
+    var result = baseLine.CellMatrices.FirstOrDefault(cm => locationParents.Any(l => cm.IdLocation == l.Descendant) && categoriesParents.Any(c => cm.IdCategory == c.Descendant));
     return result;
 }
 
