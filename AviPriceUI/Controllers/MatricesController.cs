@@ -83,10 +83,6 @@ namespace AviPriceUI.Controllers
         [HttpPost]
         public async Task<IActionResult> Index(int? id, MatricesViewModel matricesViewModel)
         {
-            if (matricesViewModel.SearchNameText == null)
-                matricesViewModel.SearchNameText = "";
-            if (matricesViewModel.SearchUserSegmentText == null)
-                matricesViewModel.SearchUserSegmentText = "";
             var aviApiContext = _context.Matrices
                 .Include(m => m.IdUserSegmentNavigation)
                 .Where(m => id != 0 || id == 0 && m.IdUserSegment != null)
