@@ -33,10 +33,7 @@ namespace AviPriceUI.Controllers
                 matricesViewModel.MatricesType = "Скидочные матрицы";
             else
                 matricesViewModel.MatricesType = "История матриц";
-            if (matriesList.Count > 0)
                 return View(matricesViewModel);
-            else
-                return NotFound();
         }
 
 

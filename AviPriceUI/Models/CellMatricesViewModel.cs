@@ -16,5 +16,9 @@ namespace AviPriceUI.Models
         public string SearchLocationText { get; set; }
 
         public string SearchCategoryText { get; set; }
+
+        public int PageCount { get; set; }
+
+        public int PageIndex { get; set; }
     }
 }

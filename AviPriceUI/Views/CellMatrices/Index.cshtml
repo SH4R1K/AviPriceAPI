@@ -11,21 +11,24 @@
   
     <div class="form-group">
 <p>
-    <input name="submitButton" value="Добавить цену" type="submit"/>
+    <input name="submitButton" value="Добавить цену" class="btn btn-secondary" type="submit"/>
 </p>
+
     <div class="form-group">
     <input name="submitButton" type="submit" value="Сохранить" class="btn btn-primary" />
     <span class="text-danger">@Model.ErrorMessage</span>
-    </div>
+		</div>
     @if(Model.IdUserSegment == 0)
     {
         <div class="form-group">
             <label asp-for="@Model.IdUserSegment" class="control-label"></label>
             <select asp-for="IdUserSegment" class="form-control" asp-items="ViewBag.IdUserSegment"></select>
-        </div>
+            </div>
+            <br />
     }
     else
     {
+        <br />
         <input asp-for="@Model.IdUserSegment" type="hidden" />
     }
         <div class="row">
@@ -38,6 +41,15 @@
                 <input type="submit" name="submitButton" class="btn btn-primary" value="Искать"/>
         </div>
         </div>
+        @if(Model.PageCount > 1)
+        {
+            <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+                    @for(int i = 1; i <= Model.PageCount; i++)
+                    {
+                    <input type="submit" name="submitButton" class="btn btn-link btn-block" value="@i" />
+                    }
+		    </div>
+		}
     <div class="form-group">
     <table class="table">
     <thead>

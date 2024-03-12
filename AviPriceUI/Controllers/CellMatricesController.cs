@@ -13,6 +13,8 @@ namespace AviPriceUI.Controllers
 
         IMemoryCache cache;
 
+        private readonly int pageSize = 10;
+
         private List<CellMatrix>? _cells
         {
             get
@@ -22,6 +24,18 @@ namespace AviPriceUI.Controllers
             set
             {
                 cache.Set("CellMatrixList", value, DateTimeOffset.Now.AddDays(7));
+            }
+        }
+
+        private int _pageIndex
+        {
+            get
+            {
+                return cache.Get("PageIndex") as int? ?? 1;
+            }
+            set
+            {
+                cache.Set("PageIndex", value, DateTimeOffset.Now.AddDays(7));
             }
         }
 
@@ -64,7 +78,8 @@ namespace AviPriceUI.Controllers
 
         private async Task<IActionResult> LoadData(int id)
         {
-            Matrix? matrix = _context.Matrices.OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
+            CellMatricesViewModel cellMatricesViewModel;
+			Matrix? matrix = _context.Matrices.OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
             if (id == -1 && matrix == null)
                 return NotFound();
             if (id != -1 && !_context.Matrices.Any(m => m.IdMatrix == id))
@@ -73,7 +88,7 @@ namespace AviPriceUI.Controllers
                 _idMatrix = id;
                 if (!_cells.All(m => m.IdMatrix == id))
                     _cells = null;
-                var cellMatricesViewModel = new CellMatricesViewModel
+                cellMatricesViewModel = new CellMatricesViewModel
                 {
                     CellMatrices = _cells,
                     IdUserSegment = 0,
@@ -91,14 +106,19 @@ namespace AviPriceUI.Controllers
                                             || id == -1 && cm.IdMatrix == matrix.IdMatrix);
                 _cells = await cellMatrices.ToListAsync();
                 _idMatrix = _cells.FirstOrDefault().IdMatrix;
+                _pageIndex = 1;
             }
             var currentMatrix = _context.Matrices.FirstOrDefault(m => m.IdMatrix == _idMatrix);
-           return View(new CellMatricesViewModel
+            cellMatricesViewModel = new CellMatricesViewModel
             {
-                CellMatrices = _cells,
+                CellMatrices = _cells.Skip((_pageIndex - 1) * pageSize)
+                                    .Take(pageSize),
                 IdUserSegment = currentMatrix.IdUserSegment,
-                MatrixName = currentMatrix.Name
-            });
+                MatrixName = currentMatrix.Name,
+                PageCount = (int)Math.Ceiling((double)_cells.Count / pageSize),
+                PageIndex = _pageIndex
+            };
+		   return View(cellMatricesViewModel);
         }
 
         [HttpPost]
@@ -145,10 +165,9 @@ namespace AviPriceUI.Controllers
                                     .Include(c => c.IdCategoryNavigation)
                                     .Include(c => c.IdLocationNavigation)
                                     .Include(c => c.IdMatrixNavigation)
-                                    .Where(cm => cm.IdMatrixNavigation.IdMatrix == _idMatrix)
-                                    .Where(cm => cm.IdCategoryNavigation.Name.Contains(matrixViewModel.SearchCategoryText))
-                                    .Where(cm => cm.IdLocationNavigation.Name.Contains(matrixViewModel.SearchLocationText));
+                                    .Where(cm => cm.IdMatrixNavigation.IdMatrix == _idMatrix);
                     _cells = await cellMatrices.ToListAsync();
+                    _pageIndex = 1;
                 }
                 var currentMatrix = _context.Matrices.FirstOrDefault(m => m.IdMatrix == _idMatrix);
                 return View(new CellMatricesViewModel
@@ -156,10 +175,14 @@ namespace AviPriceUI.Controllers
                     CellMatrices = _cells.Where(cm => cm.IdCategoryNavigation.Name.Contains(matrixViewModel.SearchCategoryText))
                                     .Where(cm => cm.IdLocationNavigation.Name.Contains(matrixViewModel.SearchLocationText)),
                     IdUserSegment = currentMatrix.IdUserSegment,
-                    MatrixName = currentMatrix.Name
+                    MatrixName = currentMatrix.Name,
+                    PageCount = (int)Math.Ceiling((double)_cells.Where(cm => cm.IdCategoryNavigation.Name.Contains(matrixViewModel.SearchCategoryText))
+                                    .Where(cm => cm.IdLocationNavigation.Name.Contains(matrixViewModel.SearchLocationText)).Count() / pageSize),
+                    PageIndex = 1
                 });
             }
-            else {
+            else if (submitButton == "Сохранить")
+            {
                 matrixViewModel.ErrorMessage = string.Empty;
                 if (matrixViewModel.CellMatrices == null)
                 {
@@ -184,24 +207,55 @@ namespace AviPriceUI.Controllers
                 };
                 _context.Matrices.Add(matrix);
                 _context.SaveChanges();
-                CellsUpdate(matrixViewModel, matrix);
-                _context.CellMatrices.AddRange(_cells);
+                int id = _context.Matrices.FirstOrDefault(m => matrix.Name == m.Name).IdMatrix;
+                CellsUpdate(matrixViewModel, id);
+                foreach (var item in _cells)
+                {
+                    item.IdCategoryNavigation = null;
+                    item.IdLocationNavigation = null;
+                    item.IdMatrixNavigation = null;
+                }
+                    _context.CellMatrices.AddRange(_cells);
                 _context.SaveChanges();
                 _cells = null;
                 return await LoadData(_context.Matrices.FirstOrDefault(m => m.Name == matrix.Name).IdMatrix);
             }
+            else 
+            {
+                if (matrixViewModel.SearchCategoryText == null)
+                    matrixViewModel.SearchCategoryText = "";
+                if (matrixViewModel.SearchLocationText == null)
+                    matrixViewModel.SearchLocationText = "";
+                CellsUpdate(matrixViewModel, matrixViewModel.CellMatrices.FirstOrDefault().IdMatrix);
+                foreach (var item in matrixViewModel.CellMatrices)
+                {
+                    item.IdLocationNavigation = _context.Locations.FirstOrDefault(l => l.IdLocation == item.IdLocation);
+                    item.IdCategoryNavigation = _context.Categories.FirstOrDefault(l => l.IdCategory == item.IdCategory);
+                    item.IdMatrixNavigation = _context.Matrices.FirstOrDefault(l => l.IdMatrix == item.IdMatrix);
+                }
+                _pageIndex = Convert.ToInt32(submitButton);
+                var currentMatrix = _context.Matrices.FirstOrDefault(m => m.IdMatrix == _idMatrix);
+                return View(new CellMatricesViewModel
+                {
+                    CellMatrices = _cells.Where(cm => cm.IdCategoryNavigation.Name.Contains(matrixViewModel.SearchCategoryText))
+                                    .Where(cm => cm.IdLocationNavigation.Name.Contains(matrixViewModel.SearchLocationText))
+                                    .Skip((_pageIndex - 1) * pageSize)
+                                    .Take(pageSize),
+                    IdUserSegment = currentMatrix.IdUserSegment,
+                    MatrixName = currentMatrix.Name,
+                    PageCount = (int)Math.Ceiling((double)_cells.Where(cm => cm.IdCategoryNavigation.Name.Contains(matrixViewModel.SearchCategoryText))
+                                    .Where(cm => cm.IdLocationNavigation.Name.Contains(matrixViewModel.SearchLocationText)).Count() / pageSize),
+                    PageIndex = _pageIndex
+                });
+            }
         }
 
-        private void CellsUpdate(CellMatricesViewModel matrixViewModel, Matrix matrix)
+        private void CellsUpdate(CellMatricesViewModel matrixViewModel, int id)
         {
-            int id = _context.Matrices.FirstOrDefault(m => matrix.Name == m.Name).IdMatrix;
             foreach (var item in _cells)
             {
                 item.IdMatrix = id;
                 item.IdCellMatrix = 0;
-                item.IdMatrixNavigation = null;
-                item.IdCategoryNavigation = null;
-                item.IdLocationNavigation = null;
                 var cellMatrix = matrixViewModel.CellMatrices.FirstOrDefault(c => c.IdCategory == item.IdCategory && c.IdLocation == item.IdLocation);
                 if (cellMatrix != null)
                     item.Price = cellMatrix.Price;
