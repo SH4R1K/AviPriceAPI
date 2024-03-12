@@ -1,0 +1,45 @@
+﻿@model MatricesViewModel
+
+@{
+    ViewData["Title"] = "Создание стораджа";
+}
+
+<h1>Создание стораджа</h1>
+
+
+    <form asp-controller="Matrices" asp-action="CreateStorage">
+    <input name="submitButton" type="submit" value="Отправить сторадж" class="btn btn-primary" />
+	<span class="text-danger">@Model.ErrorMessage</span>
+    <br />
+    <br />
+        <div class="row">
+            <div class="col-md-4 d-flex">
+                <input asp-for="SearchNameText" type="text" class="form-control" placeholder="Поиск...">
+                <button type="submit" class="btn btn-primary">Искать</button>
+            </div>
+            <div class="col-md-4 d-flex">
+                <input asp-for="SearchUserSegmentText" type="text" class="form-control" placeholder="Поиск...">
+                <button type="submit" class="btn btn-primary">Искать</button>
+            </div>
+        </div>
+    
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+            </th>
+            <th>
+                <span class="text-black">Название матрицы</span>
+            </th>
+            <th>
+                <span class="text-black">Сегмент пользователей</span>
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+            @Html.EditorFor(model => Model.Matrices)
+    </tbody>
+	</table>
+</form>

@@ -28,5 +28,7 @@
 
             set => searchUserSegmentText = value;
         }
+
+        public string ErrorMessage { get; set; }
     }
 }

@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using AviPriceUI.Data;
+using AviPriceUI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using AviPriceUI.Data;
-using AviPriceUI.Models;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace AviPriceUI.Controllers
 {
@@ -15,16 +11,31 @@ namespace AviPriceUI.Controllers
     {
         private readonly AviContext _context;
 
-        public MatricesController(AviContext context)
+        IMemoryCache cache;
+
+        public MatricesController(AviContext context, IMemoryCache memoryCache)
         {
             _context = context;
+            cache = memoryCache;
+        }
+
+        private List<Matrix>? _matrices
+        {
+            get
+            {
+                return cache.Get("CellMatrixList") as List<Matrix>;
+            }
+            set
+            {
+                cache.Set("CellMatrixList", value, DateTimeOffset.Now.AddDays(7));
+            }
         }
 
         // GET: Matrices
         public async Task<IActionResult> Index(int? id)
         {
-            var aviApiContext = _context.Matrices.Include(m => m.IdUserSegmentNavigation).Where(m => id != 0 || id == 0 && m.IdUserSegment != null);
-            var matriesList = await aviApiContext.ToListAsync();
+            var matrices = _context.Matrices.Include(m => m.IdUserSegmentNavigation).Where(m => id != 0 || id == 0 && m.IdUserSegment != null);
+            var matriesList = await matrices.ToListAsync();
             var matricesViewModel = new MatricesViewModel
             {
                 Matrices = matriesList
@@ -33,9 +44,65 @@ namespace AviPriceUI.Controllers
                 matricesViewModel.MatricesType = "Скидочные матрицы";
             else
                 matricesViewModel.MatricesType = "История матриц";
-                return View(matricesViewModel);
+            return View(matricesViewModel);
         }
 
+        public async Task<IActionResult> CreateStorage()
+        {
+            var matrices = _context.Matrices.Include(m => m.IdUserSegmentNavigation);
+            _matrices = await matrices.ToListAsync();
+            var matricesViewModel = new MatricesViewModel
+            {
+                Matrices = _matrices
+            };
+            return View(matricesViewModel);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateStorage(MatricesViewModel matricesViewModel, string submitButton)
+        {
+            matricesViewModel.ErrorMessage = "";
+            MatricesUpdate(matricesViewModel.Matrices.ToList());
+            if (submitButton == "Искать")
+            {
+                matricesViewModel.Matrices = _matrices.Where(m => m.Name.Contains(matricesViewModel.SearchNameText))
+                    .Where(m => m.IdUserSegmentNavigation == null || m.IdUserSegmentNavigation.Name.Contains(matricesViewModel.SearchUserSegmentText));
+            }
+            else if (submitButton == "Отправить сторадж")
+            {
+                var selectedMatrices = _matrices.Where(m => m.IsSelected).ToList();
+                if (selectedMatrices.Count == 0)
+                    matricesViewModel.ErrorMessage = "Вы ничего не выбрали";
+                else if (CheckBaselineCount(selectedMatrices))
+                    matricesViewModel.ErrorMessage = "В сторадже может быть только один базлайн";
+                else
+                    matricesViewModel.ErrorMessage = "Отправлено";
+            }
+            return View(matricesViewModel);
+        }
+
+        private void MatricesUpdate(List<Matrix> matrices)
+        {
+            foreach (var item in _matrices)
+            {
+                var matrix = matrices.FirstOrDefault(m => m.Name == item.Name);
+                if(matrix != null)
+                    item.IsSelected = matrix.IsSelected;
+            }
+        }
+
+        public bool CheckBaselineCount(List<Matrix> matrices)
+        {
+            int counter = 0;
+            foreach (var item in matrices)
+            {
+                if (item.IdUserSegment == null)
+                    counter++;
+                if (counter > 1)
+                    return true;
+            }
+            return false;
+        }
 
         // GET: Matrices/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -87,7 +154,7 @@ namespace AviPriceUI.Controllers
                 .Include(m => m.IdUserSegmentNavigation)
                 .Where(m => id != 0 || id == 0 && m.IdUserSegment != null)
                 .Where(m => m.Name.Contains(matricesViewModel.SearchNameText))
-                .Where(m => m.IdUserSegmentNavigation == null && matricesViewModel.SearchUserSegmentText.IsNullOrEmpty() 
+                .Where(m => m.IdUserSegmentNavigation == null
                 || m.IdUserSegmentNavigation.Name.Contains(matricesViewModel.SearchUserSegmentText));
             var matriesList = await aviApiContext.ToListAsync();
             matricesViewModel.Matrices = matriesList;
