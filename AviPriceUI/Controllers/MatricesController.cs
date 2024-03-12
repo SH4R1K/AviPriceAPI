@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using System.IdentityModel.Tokens.Jwt;
+using ProtoBuf;
+using Serializer = ProtoBuf.Serializer;
 
 namespace AviPriceUI.Controllers
 {
@@ -61,7 +64,7 @@ namespace AviPriceUI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateStorage(MatricesViewModel matricesViewModel, string submitButton)
         {
-            matricesViewModel.ErrorMessage = "";
+            matricesViewModel.Message = "";
             MatricesUpdate(matricesViewModel.Matrices.ToList());
             if (submitButton == "Искать")
             {
@@ -72,11 +75,34 @@ namespace AviPriceUI.Controllers
             {
                 var selectedMatrices = _matrices.Where(m => m.IsSelected).ToList();
                 if (selectedMatrices.Count == 0)
-                    matricesViewModel.ErrorMessage = "Вы ничего не выбрали";
+                    matricesViewModel.Message = "Вы ничего не выбрали";
                 else if (CheckBaselineCount(selectedMatrices))
-                    matricesViewModel.ErrorMessage = "В сторадже может быть только один базлайн";
+                    matricesViewModel.Message = "В сторадже может быть только один базлайн";
                 else
-                    matricesViewModel.ErrorMessage = "Отправлено";
+                {
+                    var matrixList = new List<Matrix>();
+                    foreach (var matrix in selectedMatrices)
+                    {
+                        matrixList.Add(new Matrix 
+                        { 
+                            IdMatrix = matrix.IdMatrix,
+                            IdUserSegment = matrix.IdUserSegment,
+                            CellMatrices = _context.CellMatrices.Where(cm => cm.IdMatrix == matrix.IdMatrix).ToList(),
+                        });
+                    }
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        foreach (var matrix in matrixList)
+                            Serializer.SerializeWithLengthPrefix(memoryStream, matrix, PrefixStyle.Fixed32);
+                        var byteArray = memoryStream.ToArray();
+                        var httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7138/") };
+                        var request = await httpClient.PostAsJsonAsync("/Storages/Update", byteArray);
+                        if(request.StatusCode == System.Net.HttpStatusCode.OK)
+                            matricesViewModel.Message = "Отправлено";
+                        else
+                            matricesViewModel.Message = "Ошибка при отправке";
+                    }
+                }   
             }
             return View(matricesViewModel);
         }

@@ -1,7 +1,10 @@
-using AviAPI.Data;
+    using AviAPI.Data;
 using AviAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using ProtoBuf;
+using System.IO;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +50,20 @@ app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int i
         return Results.Ok(new { baseLine.IdMatrix, cellMatrix.Price, cellMatrix.IdLocation, cellMatrix.IdCategory, idUserSegment });
     }
     return Results.NotFound(null);
+});
+
+app.MapPost("/Storages/Update", async ([FromBody] byte[] storage, AviApiContext context) =>
+{
+    List<Matrix> matrices;
+    using (var memoryStream = new MemoryStream(storage))
+    {
+        matrices = Serializer.DeserializeItems<Matrix>(memoryStream, PrefixStyle.Fixed32, -1).ToList();
+    }
+    if(matrices != null)
+        
+        return Results.Ok();
+    else
+        return Results.BadRequest();
 });
 
 

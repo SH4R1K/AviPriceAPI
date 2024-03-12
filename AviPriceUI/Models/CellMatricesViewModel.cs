@@ -9,7 +9,7 @@ namespace AviPriceUI.Models
 
         public IEnumerable<CellMatrix> CellMatrices { get; set; }
 
-        public string ErrorMessage { get; set; }
+        public string Message { get; set; }
 
         [DisplayName("Сегмент пользователей")]
         public int? IdUserSegment { get; set; } = null;

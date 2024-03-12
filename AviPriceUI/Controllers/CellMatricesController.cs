@@ -201,15 +201,15 @@ namespace AviPriceUI.Controllers
             }
             else if (submitButton == "Сохранить")
             {
-                matrixViewModel.ErrorMessage = string.Empty;
+                matrixViewModel.Message = "Сохранено";
                 if (matrixViewModel.CellMatrices == null)
                 {
-                    matrixViewModel.ErrorMessage = "Матрица пуста";
+                    matrixViewModel.Message = "Матрица пуста";
                     return View(matrixViewModel);
                 }
                 else if (matrixViewModel.CellMatrices.Any(cm => cm.Price == null))
                 {
-                    matrixViewModel.ErrorMessage = "Цены указаны неверно";
+                    matrixViewModel.Message = "Цены указаны неверно";
                     foreach (var item in matrixViewModel.CellMatrices)
                     {
                         item.IdLocationNavigation = _context.Locations.FirstOrDefault(l => l.IdLocation == item.IdLocation);
