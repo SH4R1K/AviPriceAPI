@@ -67,8 +67,10 @@ app.MapPost("/Storages/Update", async ([FromBody] byte[] storage, AviApiContext 
         matrices = Serializer.DeserializeItems<Matrix>(memoryStream, PrefixStyle.Fixed32, -1).ToList();
     }
     if(matrices != null)
-        
+    {
+
         return Results.Ok();
+    }
     else
         return Results.BadRequest();
 });
