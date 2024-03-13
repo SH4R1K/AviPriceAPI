@@ -19,17 +19,33 @@
                 <img src="~/images/AviPriceLogo.png"/>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"].ToString() == "CellMatrices" && 
+                        ViewContext.RouteData.Values["action"].ToString() == "Index" && ViewContext.RouteData.Values["id"].ToString() == "-1" ? "active" : "")">
                             <a class="nav-link text-dark" asp-area="" asp-controller="CellMatrices" asp-action="Index" asp-route-id="-1">Основная матрица</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="aVerticalSeparator">
+                        </li>
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"].ToString() == "Matrices" && 
+                        ViewContext.RouteData.Values["action"].ToString() == "Index" && ViewContext.RouteData.Values["id"].ToString() == "0" ? "active" : "")">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Matrices" asp-action="Index" asp-route-id="0">Скидочные матрицы</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="aVerticalSeparator">
+                        </li>
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"].ToString() == "Matrices" && 
+                        ViewContext.RouteData.Values["action"].ToString() == "Index" && ViewContext.RouteData.Values["id"].ToString() == "1" ? "active" : "")">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Matrices" asp-action="Index" asp-route-id="1">История матриц</a>
                         </li>
-                        <li class="nav-item">
+                        <li class="aVerticalSeparator">
+                        </li>
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"].ToString() == "Matrices" && 
+                        ViewContext.RouteData.Values["action"].ToString() == "CreateStorage" ? "active" : "")">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Matrices" asp-action="CreateStorage">Создание стораджа</a>
+                        </li>
+                        <li class="aVerticalSeparator">
+                        </li>
+                        <li class="nav-item @(ViewContext.RouteData.Values["controller"].ToString() == "Main" &&
+                        ViewContext.RouteData.Values["action"].ToString() == "Info" ? "active" : "")">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Main" asp-action="Info">Справка</a>
                         </li>
                     </ul>
                 </div>
