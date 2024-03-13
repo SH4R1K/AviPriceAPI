@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.VisualBasic;
 
 namespace AviPriceUI.Controllers
 {
@@ -13,7 +14,7 @@ namespace AviPriceUI.Controllers
 
         IMemoryCache cache;
 
-        private readonly int pageSize = 25;
+        private readonly int pageSize = 25; 
 
         private List<CellMatrix>? _cells
         {
@@ -60,7 +61,7 @@ namespace AviPriceUI.Controllers
         // GET: CellMatrices/Index/1
         public async Task<IActionResult> Index(int id)
         {
-            return await LoadData(id);
+            return await LoadDataAsync(id);
         }
 
         // GET: CellMatrices/IndexNotEdit/1
@@ -68,21 +69,16 @@ namespace AviPriceUI.Controllers
         {
             try
             {
-                var cellMatrices = await _context.CellMatrices
-                    .Include(cm => cm.IdCategoryNavigation)
-                    .Include(cm => cm.IdLocationNavigation)
-                    .Where(cm => cm.IdMatrix == id)
-                    .ToListAsync();
+                var cellMatrices = await LoadCellMatricesAsync(_idMatrix ?? 1);
                 _idMatrix = id;
                 _pageIndex = 1;
                 return View(new CellMatricesViewModel
                 {
                     CellMatrices = cellMatrices.Take(pageSize),
-                    MatrixName = _context.Matrices.FirstOrDefault(m => m.IdMatrix == id).Name,
+                    MatrixName = (await _context.Matrices.FirstOrDefaultAsync(m => m.IdMatrix == id)).Name,
                     PageCount = (int)Math.Ceiling((double)cellMatrices.Count / pageSize),
                     PageIndex = _pageIndex
                 });
-
             }
             catch
             {
@@ -94,26 +90,16 @@ namespace AviPriceUI.Controllers
         [HttpPost]
         public async Task<IActionResult> IndexNotEdit(CellMatricesViewModel cellMatricesViewModel, string submitButton)
         {
-
             try
             {
-                var cellMatrices = await _context.CellMatrices
-                    .Include(cm => cm.IdCategoryNavigation)
-                    .Include(cm => cm.IdLocationNavigation)
-                    .Where(cm => cm.IdMatrix == _idMatrix)
-                    .Where(cm => cm.IdCategoryNavigation.Name.Contains(cellMatricesViewModel.SearchCategoryText))
-                    .Where(cm => cm.IdLocationNavigation.Name.Contains(cellMatricesViewModel.SearchLocationText))
-                    .ToListAsync();
+                List<CellMatrix> cellMatrices = await LoadCellMatricesAsync(_idMatrix ?? 1, cellMatricesViewModel.SearchCategoryText, cellMatricesViewModel.SearchLocationText);
                 int pageCount = (int)Math.Ceiling((double)cellMatrices.Count / pageSize);
-                if (submitButton == "Назад" && _pageIndex > 1)
-                    _pageIndex = _pageIndex - 1;
-                if (submitButton == "Вперед" && _pageIndex < pageCount)
-                    _pageIndex = _pageIndex + 1;
+                GoToPage(submitButton, pageCount);
 
                 return View(new CellMatricesViewModel
                 {
                     CellMatrices = cellMatrices.Skip((_pageIndex - 1) * pageSize).Take(pageSize),
-                    MatrixName = _context.Matrices.FirstOrDefault(m => m.IdMatrix == _idMatrix).Name,
+                    MatrixName = (await _context.Matrices.FirstOrDefaultAsync(m => m.IdMatrix == _idMatrix)).Name,
                     PageCount = pageCount,
                     PageIndex = _pageIndex
                 });
@@ -124,84 +110,52 @@ namespace AviPriceUI.Controllers
             }
         }
 
+        private async Task<List<CellMatrix>> LoadCellMatricesAsync(int id, string searchCategoryText = "", string searchLocationText = "")
+        {
+            return await _context.CellMatrices
+                .Include(cm => cm.IdCategoryNavigation)
+                .Include(cm => cm.IdLocationNavigation)
+                .Where(cm => cm.IdMatrix == _idMatrix)
+                .Where(cm => cm.IdCategoryNavigation.Name.Contains(searchCategoryText))
+                .Where(cm => cm.IdLocationNavigation.Name.Contains(searchLocationText))
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Убавляет или прибавляет _pageIndex на 1 взависимости от нажатой кнопки
+        /// </summary>
+        /// <param name="submitButton">Кнопка перехода</param>
+        /// <param name="pageCount">Количество страниц</param>
+        private void GoToPage(string submitButton, int pageCount)
+        {
+            if (submitButton == "Назад" && _pageIndex > 1)
+                _pageIndex--;
+            if (submitButton == "Вперед" && _pageIndex < pageCount)
+                _pageIndex++;
+        }
+
         /// <summary>
         /// Загружает данные для страницы Index
         /// </summary>
-        /// <param name="id">Индекс матрицы, если -1 то последнюю, если не существующий то новая матрица</param>
+        /// <param name="id">Индекс матрицы. Если -1, то последнюю, если не существующий индекс - новая матрица</param>
         /// <returns>Страница Index</returns>
-        private async Task<IActionResult> LoadData(int id)
+        private async Task<IActionResult> LoadDataAsync(int id)
         {
-            CellMatricesViewModel cellMatricesViewModel;
-            Matrix? matrix = _context.Matrices.OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
-            if (id == -1 && matrix == null)
-                return NotFound();
-            if (id != -1 && !_context.Matrices.Any(m => m.IdMatrix == id))
+            try
             {
-                ViewData["IdUserSegment"] = new SelectList(_context.UserSegments, "IdUserSegment", "Name");
-                _idMatrix = id;
-                if (!_cells.All(m => m.IdMatrix == id))
-                    _cells = null;
-                cellMatricesViewModel = new CellMatricesViewModel
-                {
-                    CellMatrices = _cells,
-                    IdUserSegment = 0,
-                    MatrixName = "Новая матрица"
-                };
-                return View(cellMatricesViewModel);
-            }
-            else if ((_cells == null || _cells.Count == 0) || _cells.FirstOrDefault().IdMatrix != id)
-            {
-                var cellMatrices = _context.CellMatrices
-                                .Include(c => c.IdCategoryNavigation)
-                                .Include(c => c.IdLocationNavigation)
-                                .Include(c => c.IdMatrixNavigation)
-                                .Where(cm => id > 0 && cm.IdMatrixNavigation.IdMatrix == id
-                                            || id == -1 && cm.IdMatrix == matrix.IdMatrix);
-                _cells = await cellMatrices.ToListAsync();
-                _idMatrix = _cells.FirstOrDefault().IdMatrix;
-                _pageIndex = 1;
-            }
-            var currentMatrix = _context.Matrices.FirstOrDefault(m => m.IdMatrix == _idMatrix);
-            cellMatricesViewModel = new CellMatricesViewModel
-            {
-                CellMatrices = _cells.Skip((_pageIndex - 1) * pageSize)
-                                    .Take(pageSize),
-                IdUserSegment = currentMatrix.IdUserSegment,
-                MatrixName = currentMatrix.Name,
-                PageCount = (int)Math.Ceiling((double)_cells.Count / pageSize),
-                PageIndex = _pageIndex
-            };
-            return View(cellMatricesViewModel);
-        }
-
-        //POST: CellMatrices/Index
-        [HttpPost]
-        public async Task<IActionResult> Index(CellMatricesViewModel matrixViewModel, string submitButton)
-        {
-            if (submitButton == "Добавить цену")
-            {
-                List<CellMatrix> existingCells = new List<CellMatrix>();
-                if (matrixViewModel.CellMatrices == null)
-                    return RedirectToAction(nameof(Create), new { id = _idMatrix });
-                foreach (var item in matrixViewModel.CellMatrices)
-                {
-                    item.IdLocationNavigation = _context.Locations.FirstOrDefault(l => l.IdLocation == item.IdLocation);
-                    item.IdCategoryNavigation = _context.Categories.FirstOrDefault(l => l.IdCategory == item.IdCategory);
-                    item.IdMatrixNavigation = _context.Matrices.FirstOrDefault(l => l.IdMatrix == item.IdMatrix);
-                    existingCells.Add(item);
-                }
-                _cells = existingCells;
-                return RedirectToAction(nameof(Create), new { id = _idMatrix });
-            }
-            else if (submitButton == "Искать")
-            {
+                CellMatricesViewModel cellMatricesViewModel;
                 Matrix? matrix = _context.Matrices.OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
-                if (!_context.Matrices.Any(m => m.IdMatrix == _idMatrix))
+
+                if (id == -1 && matrix == null)
+                    return NotFound();
+
+                if (id != -1 && !_context.Matrices.Any(m => m.IdMatrix == id))
                 {
                     ViewData["IdUserSegment"] = new SelectList(_context.UserSegments, "IdUserSegment", "Name");
-                    if (!_cells.All(m => m.IdMatrix == _idMatrix))
+                    _idMatrix = id;
+                    if (!_cells.All(m => m.IdMatrix == id))
                         _cells = null;
-                    var cellMatricesViewModel = new CellMatricesViewModel
+                    cellMatricesViewModel = new CellMatricesViewModel
                     {
                         CellMatrices = _cells,
                         IdUserSegment = 0,
@@ -209,99 +163,176 @@ namespace AviPriceUI.Controllers
                     };
                     return View(cellMatricesViewModel);
                 }
-                else if ((_cells == null || _cells.Count == 0) || _cells.FirstOrDefault().IdMatrix != _idMatrix)
+                else if ((_cells == null || _cells.Count == 0) || _cells.FirstOrDefault().IdMatrix != id)
                 {
                     var cellMatrices = _context.CellMatrices
                                     .Include(c => c.IdCategoryNavigation)
                                     .Include(c => c.IdLocationNavigation)
                                     .Include(c => c.IdMatrixNavigation)
-                                    .Where(cm => cm.IdMatrixNavigation.IdMatrix == _idMatrix);
+                                    .Where(cm => id > 0 && cm.IdMatrixNavigation.IdMatrix == id
+                                                || id == -1 && cm.IdMatrix == matrix.IdMatrix);
                     _cells = await cellMatrices.ToListAsync();
+                    _idMatrix = _cells.FirstOrDefault().IdMatrix;
                     _pageIndex = 1;
                 }
+
                 var currentMatrix = _context.Matrices.FirstOrDefault(m => m.IdMatrix == _idMatrix);
-                return View(new CellMatricesViewModel
+                cellMatricesViewModel = new CellMatricesViewModel
                 {
-                    CellMatrices = _cells.Where(cm => cm.IdCategoryNavigation.Name.Contains(matrixViewModel.SearchCategoryText))
-                                    .Where(cm => cm.IdLocationNavigation.Name.Contains(matrixViewModel.SearchLocationText))
-                                    .Skip((_pageIndex - 1) * pageSize)
-                                    .Take(pageSize),
+                    CellMatrices = _cells.Skip((_pageIndex - 1) * pageSize)
+                                        .Take(pageSize),
                     IdUserSegment = currentMatrix.IdUserSegment,
                     MatrixName = currentMatrix.Name,
-                    PageCount = (int)Math.Ceiling((double)_cells.Where(cm => cm.IdCategoryNavigation.Name.Contains(matrixViewModel.SearchCategoryText))
-                                    .Where(cm => cm.IdLocationNavigation.Name.Contains(matrixViewModel.SearchLocationText)).Count() / pageSize),
-                    PageIndex = 1
-                });
-            }
-            else if (submitButton == "Сохранить")
-            {
-                matrixViewModel.Message = "Сохранено";
-                if (matrixViewModel.CellMatrices == null)
-                {
-                    matrixViewModel.Message = "Матрица пуста";
-                    return View(matrixViewModel);
-                }
-                else if (matrixViewModel.CellMatrices.Any(cm => cm.Price == null))
-                {
-                    matrixViewModel.Message = "Цены указаны неверно";
-                    foreach (var item in matrixViewModel.CellMatrices)
-                    {
-                        item.IdLocationNavigation = _context.Locations.FirstOrDefault(l => l.IdLocation == item.IdLocation);
-                        item.IdCategoryNavigation = _context.Categories.FirstOrDefault(l => l.IdCategory == item.IdCategory);
-                        item.IdMatrixNavigation = _context.Matrices.FirstOrDefault(l => l.IdMatrix == item.IdMatrix);
-                    }
-                    return View(matrixViewModel);
-                }
-                var matrix = new Matrix
-                {
-                    Name = (matrixViewModel.IdUserSegment == null ? "baseline" : "discountline") + (_context.Matrices.OrderBy(m => m.IdMatrix).LastOrDefault().IdMatrix + 1),
-                    IdUserSegment = matrixViewModel.IdUserSegment,
-                };
-                _context.Matrices.Add(matrix);
-                _context.SaveChanges();
-                int id = _context.Matrices.FirstOrDefault(m => matrix.Name == m.Name).IdMatrix;
-                CellsUpdate(matrixViewModel, id);
-                foreach (var item in _cells)
-                {
-                    item.IdCategoryNavigation = null;
-                    item.IdLocationNavigation = null;
-                    item.IdMatrixNavigation = null;
-                }
-                _context.CellMatrices.AddRange(_cells);
-                _context.SaveChanges();
-                _cells = null;
-                return await LoadData(_context.Matrices.FirstOrDefault(m => m.Name == matrix.Name).IdMatrix);
-            }
-            else
-            {
-                CellsUpdate(matrixViewModel, matrixViewModel.CellMatrices.FirstOrDefault().IdMatrix);
-                foreach (var item in matrixViewModel.CellMatrices)
-                {
-                    item.IdLocationNavigation = _context.Locations.FirstOrDefault(l => l.IdLocation == item.IdLocation);
-                    item.IdCategoryNavigation = _context.Categories.FirstOrDefault(l => l.IdCategory == item.IdCategory);
-                    item.IdMatrixNavigation = _context.Matrices.FirstOrDefault(l => l.IdMatrix == item.IdMatrix);
-                }
-                int pageCount = (int)Math.Ceiling((double)_cells.Where(cm => cm.IdCategoryNavigation.Name.Contains(matrixViewModel.SearchCategoryText))
-                                    .Where(cm => cm.IdLocationNavigation.Name.Contains(matrixViewModel.SearchLocationText)).Count() / pageSize);
-                if (submitButton == "Назад" && _pageIndex > 1)
-                    _pageIndex = _pageIndex - 1;
-                if (submitButton == "Вперед" && _pageIndex < pageCount)
-                    _pageIndex = _pageIndex + 1;
-                var currentMatrix = _context.Matrices.FirstOrDefault(m => m.IdMatrix == _idMatrix);
-                return View(new CellMatricesViewModel
-                {
-                    CellMatrices = _cells.Where(cm => cm.IdCategoryNavigation.Name.Contains(matrixViewModel.SearchCategoryText))
-                                    .Where(cm => cm.IdLocationNavigation.Name.Contains(matrixViewModel.SearchLocationText))
-                                    .Skip((_pageIndex - 1) * pageSize)
-                                    .Take(pageSize),
-                    IdUserSegment = currentMatrix.IdUserSegment,
-                    MatrixName = currentMatrix.Name,
-                    PageCount = pageCount,
+                    PageCount = (int)Math.Ceiling((double)_cells.Count / pageSize),
                     PageIndex = _pageIndex
-                });
+                };
+
+                return View(cellMatricesViewModel);
+            }
+            catch
+            {
+                return RedirectToAction("Error", "Main");
             }
         }
 
+        //POST: CellMatrices/Index
+        [HttpPost]
+        public async Task<IActionResult> Index(CellMatricesViewModel matrixViewModel, string submitButton)
+        {
+            try
+            {
+                if (submitButton == "Добавить цену")
+                {
+                    List<CellMatrix> existingCells = new List<CellMatrix>();
+                    if (matrixViewModel.CellMatrices == null)
+                        return RedirectToAction(nameof(Create), new { id = _idMatrix });
+
+                    LoadCellMatricesViewData(matrixViewModel);
+                    existingCells.AddRange(matrixViewModel.CellMatrices);
+                    _cells = existingCells;
+
+                    return RedirectToAction(nameof(Create), new { id = _idMatrix });
+                }
+                else if (submitButton == "Искать")
+                {
+                    Matrix? matrix = _context.Matrices.OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
+                    if (!_context.Matrices.Any(m => m.IdMatrix == _idMatrix))
+                    {
+                        ViewData["IdUserSegment"] = new SelectList(_context.UserSegments, "IdUserSegment", "Name");
+                        if (!_cells.All(m => m.IdMatrix == _idMatrix))
+                            _cells = null;
+                        var cellMatricesViewModel = new CellMatricesViewModel
+                        {
+                            CellMatrices = _cells,
+                            IdUserSegment = 0,
+                            MatrixName = "Новая матрица"
+                        };
+                        return View(cellMatricesViewModel);
+                    }
+                    else if ((_cells == null || _cells.Count == 0) || _cells.FirstOrDefault().IdMatrix != _idMatrix)
+                    {
+                        var cellMatrices = _context.CellMatrices
+                                        .Include(c => c.IdCategoryNavigation)
+                                        .Include(c => c.IdLocationNavigation)
+                                        .Include(c => c.IdMatrixNavigation)
+                                        .Where(cm => cm.IdMatrixNavigation.IdMatrix == _idMatrix);
+                        _cells = await cellMatrices.ToListAsync();
+                        _pageIndex = 1;
+                    }
+                    var currentMatrix = _context.Matrices.FirstOrDefault(m => m.IdMatrix == _idMatrix);
+                    return View(new CellMatricesViewModel
+                    {
+                        CellMatrices = _cells.Where(cm => cm.IdCategoryNavigation.Name.Contains(matrixViewModel.SearchCategoryText))
+                                        .Where(cm => cm.IdLocationNavigation.Name.Contains(matrixViewModel.SearchLocationText))
+                                        .Skip((_pageIndex - 1) * pageSize)
+                                        .Take(pageSize),
+                        IdUserSegment = currentMatrix.IdUserSegment,
+                        MatrixName = currentMatrix.Name,
+                        PageCount = (int)Math.Ceiling((double)_cells.Where(cm => cm.IdCategoryNavigation.Name.Contains(matrixViewModel.SearchCategoryText))
+                                        .Where(cm => cm.IdLocationNavigation.Name.Contains(matrixViewModel.SearchLocationText)).Count() / pageSize),
+                        PageIndex = 1
+                    });
+                }
+                else if (submitButton == "Сохранить")
+                {
+                    matrixViewModel.Message = "Сохранено";
+                    if (matrixViewModel.CellMatrices == null)
+                    {
+                        matrixViewModel.Message = "Матрица пуста";
+                        return View(matrixViewModel);
+                    }
+                    else if (matrixViewModel.CellMatrices.Any(cm => cm.Price == null))
+                    {
+                        matrixViewModel.Message = "Цены указаны неверно";
+                        LoadCellMatricesViewData(matrixViewModel);
+                        return View(matrixViewModel);
+                    }
+                    var matrix = new Matrix
+                    {
+                        Name = (matrixViewModel.IdUserSegment == null ? "baseline" : "discountline") + (_context.Matrices.OrderBy(m => m.IdMatrix).LastOrDefault().IdMatrix + 1),
+                        IdUserSegment = matrixViewModel.IdUserSegment,
+                    };
+                    _context.Matrices.Add(matrix);
+                    _context.SaveChanges();
+                    int id = _context.Matrices.FirstOrDefault(m => matrix.Name == m.Name).IdMatrix;
+                    CellsUpdate(matrixViewModel, id);
+                    foreach (var item in _cells)
+                    {
+                        item.IdCategoryNavigation = null;
+                        item.IdLocationNavigation = null;
+                        item.IdMatrixNavigation = null;
+                    }
+                    _context.CellMatrices.AddRange(_cells);
+                    _context.SaveChanges();
+                    _cells = null;
+                    return await LoadDataAsync(_context.Matrices.FirstOrDefault(m => m.Name == matrix.Name).IdMatrix);
+                }
+                else
+                {
+                    CellsUpdate(matrixViewModel, matrixViewModel.CellMatrices.FirstOrDefault().IdMatrix);
+                    LoadCellMatricesViewData(matrixViewModel);
+                    int pageCount = (int)Math.Ceiling((double)_cells.Where(cm => cm.IdCategoryNavigation.Name.Contains(matrixViewModel.SearchCategoryText))
+                                        .Where(cm => cm.IdLocationNavigation.Name.Contains(matrixViewModel.SearchLocationText)).Count() / pageSize);
+                    GoToPage(submitButton, pageCount);
+                    var currentMatrix = _context.Matrices.FirstOrDefault(m => m.IdMatrix == _idMatrix);
+                    return View(new CellMatricesViewModel
+                    {
+                        CellMatrices = _cells.Where(cm => cm.IdCategoryNavigation.Name.Contains(matrixViewModel.SearchCategoryText))
+                                        .Where(cm => cm.IdLocationNavigation.Name.Contains(matrixViewModel.SearchLocationText))
+                                        .Skip((_pageIndex - 1) * pageSize)
+                                        .Take(pageSize),
+                        IdUserSegment = currentMatrix.IdUserSegment,
+                        MatrixName = currentMatrix.Name,
+                        PageCount = pageCount,
+                        PageIndex = _pageIndex
+                    });
+                }
+            }
+            catch
+            {
+                return RedirectToAction("Error", "Main");
+            }
+        }
+
+        /// <summary>
+        /// Догружает данные о категории, локации, матрице
+        /// </summary>
+        /// <param name="matrixViewModel">ViewModel матрицы пришедший со страницы</param>
+        private void LoadCellMatricesViewData(CellMatricesViewModel matrixViewModel)
+        {
+            foreach (var item in matrixViewModel.CellMatrices)
+            {
+                item.IdLocationNavigation = _context.Locations.FirstOrDefault(l => l.IdLocation == item.IdLocation);
+                item.IdCategoryNavigation = _context.Categories.FirstOrDefault(l => l.IdCategory == item.IdCategory);
+                item.IdMatrixNavigation = _context.Matrices.FirstOrDefault(l => l.IdMatrix == item.IdMatrix);
+            }
+        }
+
+        /// <summary>
+        /// Обновляет _cells с учетом изменении из matrixViewModel
+        /// </summary>
+        /// <param name="matrixViewModel">ViewModel матрицы пришедший со страницы</param>
+        /// <param name="id">Индекс матрицы</param>
         private void CellsUpdate(CellMatricesViewModel matrixViewModel, int id)
         {
             foreach (var item in _cells)
@@ -314,39 +345,24 @@ namespace AviPriceUI.Controllers
             }
         }
 
-
-        // GET: CellMatrices/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var cellMatrix = await _context.CellMatrices
-                .Include(c => c.IdCategoryNavigation)
-                .Include(c => c.IdLocationNavigation)
-                .Include(c => c.IdMatrixNavigation)
-                .FirstOrDefaultAsync(m => m.IdCellMatrix == id);
-            if (cellMatrix == null)
-            {
-                return NotFound();
-            }
-
-            return View(cellMatrix);
-        }
-
         // GET: CellMatrices/Create
         public IActionResult Create(int id)
         {
-            ViewData["IdCategory"] = new SelectList(_context.Categories, "IdCategory", "Name");
-            ViewData["IdLocation"] = new SelectList(_context.Locations, "IdLocation", "Name");
-            ViewData["IdMatrix"] = new SelectList(_context.Matrices, "IdMatrix", "IdMatrix");
-            var cellMatrix = new CellMatrix
+            try
             {
-                IdMatrix = id
-            };
-            return View(cellMatrix);
+                ViewData["IdCategory"] = new SelectList(_context.Categories, "IdCategory", "Name");
+                ViewData["IdLocation"] = new SelectList(_context.Locations, "IdLocation", "Name");
+                ViewData["IdMatrix"] = new SelectList(_context.Matrices, "IdMatrix", "IdMatrix");
+                var cellMatrix = new CellMatrix
+                {
+                    IdMatrix = id
+                };
+                return View(cellMatrix);
+            }
+            catch
+            {
+                return RedirectToAction("Error", "Main");
+            }
         }
 
         // POST: CellMatrices/Create
@@ -356,120 +372,54 @@ namespace AviPriceUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("IdCellMatrix,Price,IdLocation,IdCategory,IdMatrix")] CellMatrix cellMatrix)
         {
-            if (_cells != null && _cells.Any(cm => cm.IdCategory == cellMatrix.IdCategory && cm.IdLocation == cellMatrix.IdLocation))
+            try
             {
-                cellMatrix.ErrorMessage = "Такая уже цена существует";
-                ViewData["IdCategory"] = new SelectList(_context.Categories, "IdCategory", "Name");
-                ViewData["IdLocation"] = new SelectList(_context.Locations, "IdLocation", "Name");
-                ViewData["IdMatrix"] = new SelectList(_context.Matrices, "IdMatrix", "IdMatrix");
-                return View(cellMatrix);
-            }
-            cellMatrix.ErrorMessage = "";
-            List<CellMatrix> existingCells = _cells ?? new List<CellMatrix>();
-            cellMatrix.IdLocationNavigation = _context.Locations.FirstOrDefault(l => l.IdLocation == cellMatrix.IdLocation);
-            cellMatrix.IdCategoryNavigation = _context.Categories.FirstOrDefault(l => l.IdCategory == cellMatrix.IdCategory);
-            //cellMatrix.IdMatrixNavigation = _context.Matrices.FirstOrDefault(l => l.IdMatrix == cellMatrix.IdMatrix);
-            cellMatrix.IdMatrix = _idMatrix ?? cellMatrix.IdMatrix;
-            existingCells.Add(cellMatrix);
-            _cells = existingCells;
-            return RedirectToAction(nameof(Index), "CellMatrices", new { id = _idMatrix });
-        }
-
-        // GET: CellMatrices/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var cellMatrix = await _context.CellMatrices.FindAsync(id);
-            if (cellMatrix == null)
-            {
-                return NotFound();
-            }
-            ViewData["IdCategory"] = new SelectList(_context.Categories, "IdCategory", "IdCategory", cellMatrix.IdCategory);
-            ViewData["IdLocation"] = new SelectList(_context.Locations, "IdLocation", "IdLocation", cellMatrix.IdLocation);
-            ViewData["IdMatrix"] = new SelectList(_context.Matrices, "IdMatrix", "IdMatrix", cellMatrix.IdMatrix);
-            return View(cellMatrix);
-        }
-
-        // POST: CellMatrices/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("IdCellMatrix,Price,IdLocation,IdCategory,IdMatrix")] CellMatrix cellMatrix)
-        {
-            if (id != cellMatrix.IdCellMatrix)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
+                if (_cells != null && _cells.Any(cm => cm.IdCategory == cellMatrix.IdCategory && cm.IdLocation == cellMatrix.IdLocation))
                 {
-                    _context.Update(cellMatrix);
-                    await _context.SaveChangesAsync();
+                    cellMatrix.ErrorMessage = "Такая уже цена существует";
+                    ViewData["IdCategory"] = new SelectList(_context.Categories, "IdCategory", "Name");
+                    ViewData["IdLocation"] = new SelectList(_context.Locations, "IdLocation", "Name");
+                    ViewData["IdMatrix"] = new SelectList(_context.Matrices, "IdMatrix", "IdMatrix");
+                    return View(cellMatrix);
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CellMatrixExists(cellMatrix.IdCellMatrix))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                cellMatrix.ErrorMessage = "";
+                List<CellMatrix> existingCells = _cells ?? new List<CellMatrix>();
+                cellMatrix.IdLocationNavigation = _context.Locations.FirstOrDefault(l => l.IdLocation == cellMatrix.IdLocation);
+                cellMatrix.IdCategoryNavigation = _context.Categories.FirstOrDefault(l => l.IdCategory == cellMatrix.IdCategory);
+                cellMatrix.IdMatrix = _idMatrix ?? cellMatrix.IdMatrix;
+                existingCells.Add(cellMatrix);
+                _cells = existingCells;
+                return RedirectToAction(nameof(Index), "CellMatrices", new { id = _idMatrix });
             }
-            ViewData["IdCategory"] = new SelectList(_context.Categories, "IdCategory", "IdCategory", cellMatrix.IdCategory);
-            ViewData["IdLocation"] = new SelectList(_context.Locations, "IdLocation", "IdLocation", cellMatrix.IdLocation);
-            ViewData["IdMatrix"] = new SelectList(_context.Matrices, "IdMatrix", "IdMatrix", cellMatrix.IdMatrix);
-            return View(cellMatrix);
+            catch
+            {
+                return RedirectToAction("Error", "Main");
+            }
         }
 
         // GET: CellMatrices/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
+            try
             {
-                return NotFound();
-            }
-
-            var cellMatrix = _cells.FirstOrDefault(c => c.IdCellMatrix == id);
-            if (cellMatrix == null)
-            {
-                return NotFound();
-            }
-            List<CellMatrix> existingCells = _cells ?? new List<CellMatrix>();
-            existingCells.Remove(cellMatrix);
-            _cells = existingCells;
-
-            return RedirectToAction(nameof(Index), new { id = cellMatrix.IdMatrix });
-        }
-
-        // POST: CellMatrices/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var cellMatrix = _cells.FirstOrDefault(c => c.IdCellMatrix == id);
-            if (cellMatrix != null)
-            {
+                if (id == null)
+                {
+                    return NotFound();
+                }
+                var cellMatrix = _cells.FirstOrDefault(c => c.IdCellMatrix == id);
+                if (cellMatrix == null)
+                {
+                    return NotFound();
+                }
                 List<CellMatrix> existingCells = _cells ?? new List<CellMatrix>();
                 existingCells.Remove(cellMatrix);
                 _cells = existingCells;
+                return RedirectToAction(nameof(Index), new { id = cellMatrix.IdMatrix });
             }
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool CellMatrixExists(int id)
-        {
-            return _context.CellMatrices.Any(e => e.IdCellMatrix == id);
+            catch
+            {
+                return RedirectToAction("Error", "Main");
+            }
         }
     }
 }
