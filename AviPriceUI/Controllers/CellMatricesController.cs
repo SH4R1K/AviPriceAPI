@@ -13,7 +13,7 @@ namespace AviPriceUI.Controllers
 
         IMemoryCache cache;
 
-        private readonly int pageSize = 10;
+        private readonly int pageSize = 25;
 
         private List<CellMatrix>? _cells
         {
@@ -66,24 +66,33 @@ namespace AviPriceUI.Controllers
         // GET: CellMatrices/IndexNotEdit/1
         public async Task<IActionResult> IndexNotEdit(int id)
         {
-            var cellMatrices = await _context.CellMatrices
-                .Include(cm => cm.IdCategoryNavigation)
-                .Include(cm => cm.IdLocationNavigation)
-                .Where(cm => cm.IdMatrix == id)
-                .ToListAsync();
-            _idMatrix = id;
-            return View(new CellMatricesViewModel
+            try
             {
-                CellMatrices = cellMatrices,
-                MatrixName = _context.Matrices.FirstOrDefault(m => m.IdMatrix == id).Name
-            });
+                var cellMatrices = await _context.CellMatrices
+                    .Include(cm => cm.IdCategoryNavigation)
+                    .Include(cm => cm.IdLocationNavigation)
+                    .Where(cm => cm.IdMatrix == id)
+                    .ToListAsync();
+                _idMatrix = id;
+                return View(new CellMatricesViewModel
+                {
+                    CellMatrices = cellMatrices,
+                    MatrixName = _context.Matrices.FirstOrDefault(m => m.IdMatrix == id).Name
+                });
+            }
+            catch
+            {
+                return RedirectToAction("Error", "Main");
+            }
         }
 
         //POST: CellMatrices/IndexNotEdit
         [HttpPost]
         public async Task<IActionResult> IndexNotEdit(CellMatricesViewModel cellMatricesViewModel)
         {
-            var cellMatrices = await _context.CellMatrices
+            try
+            {
+                var cellMatrices = await _context.CellMatrices
                 .Include(cm => cm.IdCategoryNavigation)
                 .Include(cm => cm.IdLocationNavigation)
                 .Where(cm => cm.IdMatrix == _idMatrix)
@@ -96,8 +105,18 @@ namespace AviPriceUI.Controllers
                 CellMatrices = cellMatrices,
                 MatrixName = _context.Matrices.FirstOrDefault(m => m.IdMatrix == _idMatrix).Name
             });
+            }
+            catch
+            {
+                return RedirectToAction("Error", "Main");
+            }
         }
 
+        /// <summary>
+        /// Загружает данные для страницы Index
+        /// </summary>
+        /// <param name="id">Индекс матрицы</param>
+        /// <returns>Страница Index</returns>
         private async Task<IActionResult> LoadData(int id)
         {
             CellMatricesViewModel cellMatricesViewModel;

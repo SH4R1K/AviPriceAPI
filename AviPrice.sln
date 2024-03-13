@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AviAPI", "AviAPI\AviAPI.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AviPriceUI", "AviPriceUI\AviPriceUI.csproj", "{6FA11014-BDB1-4130-94F5-E0B02E37BA4C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SendDataInApi", "SendDataInApi\SendDataInApi.csproj", "{A0FF11FC-01BC-48D0-A121-B8ADAD8C670E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{6FA11014-BDB1-4130-94F5-E0B02E37BA4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6FA11014-BDB1-4130-94F5-E0B02E37BA4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6FA11014-BDB1-4130-94F5-E0B02E37BA4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0FF11FC-01BC-48D0-A121-B8ADAD8C670E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0FF11FC-01BC-48D0-A121-B8ADAD8C670E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0FF11FC-01BC-48D0-A121-B8ADAD8C670E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0FF11FC-01BC-48D0-A121-B8ADAD8C670E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
