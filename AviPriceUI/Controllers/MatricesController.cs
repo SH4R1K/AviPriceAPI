@@ -93,7 +93,8 @@ namespace AviPriceUI.Controllers
                 MatricesUpdate(matricesViewModel.Matrices.ToList());
                 if (submitButton == "Искать")
                 {
-                    matricesViewModel.Matrices = _matrices.Where(m => m.Name.Contains(matricesViewModel.SearchNameText))
+                    matricesViewModel.Matrices = _matrices
+                        .Where(m => m.Name.Contains(matricesViewModel.SearchNameText))
                         .Where(m => m.IdUserSegmentNavigation == null || m.IdUserSegmentNavigation.Name.Contains(matricesViewModel.SearchUserSegmentText));
                 }
                 else if (submitButton == "Отправить сторадж")
@@ -161,18 +162,10 @@ namespace AviPriceUI.Controllers
         /// Проверяет количество базлайнов
         /// </summary>
         /// <param name="matrices">Список с изменениями</param>
-        /// <returns>Возвращает false, если базлайнов больше одного. Возвращает true, если базлайнов меньше одного</returns>
+        /// <returns>Возвращает true, если базлайнов больше одного. Возвращает false, если базлайнов меньше одного</returns>
         public bool CheckBaselineCount(List<Matrix> matrices)
         {
-            int counter = 0;
-            foreach (var item in matrices)
-            {
-                if (item.IdUserSegment == null)
-                    counter++;
-                if (counter > 1)
-                    return true;
-            }
-            return false;
+            return matrices.Count(m => m.IdUserSegment == null) > 1;
         }
 
         // GET: Matrices/Create
