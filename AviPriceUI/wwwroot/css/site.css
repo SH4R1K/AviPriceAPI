@@ -18,62 +18,15 @@ html {
   min-height: 100%;
 }
 
-body {
-  margin-bottom: 60px;
-}
-
 main {
     margin: 30px;
 }
 
-.tree {
-    --spacing: 1.5rem;
-    --radius: 10px;
-}
-
-.tree li {
-    display: block;
-    position: relative;
-    padding-left: calc(2 * var(--spacing) - var(--radius) - 2px);
-}
-
-.tree ul {
-    margin-left: calc(var(--radius) - var(--spacing));
-    padding-left: 0;
-}
-
-.tree ul li {
-    border-left: 2px solid #ddd;
-}
-
-.tree ul li:last-child {
-    border-color: transparent;
-}
-
-.tree ul li::before {
-    content: '';
-    display: block;
-    position: absolute;
-    top: calc(var(--spacing) / -2);
-    left: -2px;
-    width: calc(var(--spacing) + 2px);
-    height: calc(var(--spacing) + 1px);
-    border: solid #ddd;
-    border-width: 0 0 2px 2px;
-}
-
 body {
+    margin-bottom: 60px;
     background-color: #f8f9fa;
     color: #333;
     font-family: Arial, sans-serif;
-}
-
-.container {
-    margin: 20px;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
@@ -107,12 +60,6 @@ table {
     width: 100%;
 }
 
-th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-}
-
 th {
     background-color: #f2f2f2;
 }
@@ -121,11 +68,10 @@ tr:nth-child(even) {
     background-color: #f2f2f2;
 }
 
-tr:hover {
-    background-color: #f9f9f9;
-}
-
 th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
     font-family: Arial, sans-serif;
     font-size: 14px;
 }
@@ -175,22 +121,18 @@ tr:hover {
     justify-content: space-between;
 }
 
-.price-form {
-    margin: 20px;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+.editor-checkbox {
+    margin-right: 10px;
 }
 
-.table {
+input[type="text"] {
     width: 100%;
-}
-
-.table th, .table td {
-    padding: 8px;
-    text-align: left;
-}
-
-.text-black {
-    color: #000;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
 }

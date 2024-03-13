@@ -5,76 +5,57 @@
 }
 
 <h1>@Model.MatricesType</h1>
-
-@if(Model.MatricesType == "Скидочные матрицы")
-{
-    <p>
-        <a asp-action="Create">Создать новую</a>
-    </p>
-    <form asp-controller="Matrices" asp-action="Index" asp-route-id="0">
-        <div class="row">
-            <div class="col-md-4 d-flex">
-                <input asp-for="SearchNameText" type="text" class="form-control" placeholder="Поиск...">
-                <button type="submit" class="btn btn-primary">Искать</button>
-            </div>
-            <div class="col-md-4 d-flex">
-                <input asp-for="SearchUserSegmentText" type="text" class="form-control" placeholder="Поиск...">
-                <button type="submit" class="btn btn-primary">Искать</button>
-            </div>
+<hr />
+<form class="price-form" asp-controller="Matrices" asp-action="Index" asp-route-id="@(Model.MatricesType=="Скидочные матрицы" ? 0 : 1)">
+    @if(Model.MatricesType == "Скидочные матрицы")
+    {
+        <p>
+			<a asp-action="Create" class="btn btn-secondary">Создать новую</a>
+        </p>
+    }
+    
+    <div class="row">
+        <div class="col-md-6 d-flex">
+            <input asp-for="SearchNameText" type="text" class="form-control" placeholder="Поиск по названию...">
+            <input type="submit" class="btn btn-secondary" value="Искать" />
         </div>
-    </form>
-}
-else
-{
-    <form asp-controller="Matrices" asp-action="Index" asp-route-id="1">
-        <div class="row">
-            <div class="col-md-4 d-flex">
-                <input asp-for="SearchNameText" type="text" class="form-control" placeholder="Search...">
-                <button type="submit" class="btn btn-primary">Искать</button>
-            </div>
-            <div class="col-md-4 d-flex">
-                <input asp-for="SearchUserSegmentText" type="text" class="form-control" placeholder="Search...">
-                <button type="submit" class="btn btn-primary">Искать</button>
-            </div>
+        <div class="col-md-6 d-flex">
+            <input asp-for="SearchUserSegmentText" type="text" class="form-control" placeholder="Поиск по сегменту пользователей...">
+            <input type="submit" class="btn btn-secondary" value="Искать" />
         </div>
-    </form>
-}
+    </div>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                <span class="text-black">Название матрицы</span>
-            </th>
-            <th>
-                <span class="text-black">Сегмент пользователей</span>
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model.Matrices) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @if(item.IdUserSegmentNavigation != null)
-                {
-                    @Html.DisplayFor(modelItem => item.IdUserSegmentNavigation.Name)
-                }
-            </td>
-            <td>
-                    @if(Model.MatricesType == "История матриц")
-                    {
-                        <a asp-controller="CellMatrices" asp-action="IndexNotEdit" asp-route-id="@item.IdMatrix">Подробности</a>
-                    }
-                    else
-                    {
-                        <a asp-controller="CellMatrices" asp-action="Index" asp-route-id="@item.IdMatrix">Редактировать</a>
-                    }
-                </td>
-        </tr>
-}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Название матрицы</th>
+                <th>Сегмент пользователей</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Matrices)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.Name)</td>
+                    <td>
+                        @if (item.IdUserSegmentNavigation != null)
+                        {
+                            @Html.DisplayFor(modelItem => item.IdUserSegmentNavigation.Name)
+                        }
+                    </td>
+                    <td>
+                        @if (Model.MatricesType == "История матриц")
+                        {
+                            <a asp-controller="CellMatrices" asp-action="IndexNotEdit" asp-route-id="@item.IdMatrix">Подробности</a>
+                        }
+                        else
+                        {
+                            <a asp-controller="CellMatrices" asp-action="Index" asp-route-id="@item.IdMatrix">Редактировать</a>
+                        }
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
+</form>

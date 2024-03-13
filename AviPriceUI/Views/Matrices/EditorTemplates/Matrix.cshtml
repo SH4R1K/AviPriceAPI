@@ -1,22 +1,31 @@
 ﻿@model Matrix
 
 <tr>
-    <td>
+    <td class ="editor-checkbox">
         <input asp-for="@Model.IsSelected" type="checkbox" />
     </td>
     <td>
-        @Html.DisplayFor(modelItem => Model.Name)
-        <input asp-for="@Model.Name" type="hidden" />
-        <input asp-for="@Model.IdMatrix" type="hidden" />
+        @* Отображение имени *@
+        <div>
+            @Html.DisplayFor(modelItem => Model.Name)
+            <input asp-for="@Model.Name" type="hidden" />
+            <input asp-for="@Model.IdMatrix" type="hidden" />
+        </div>
     </td>
     <td>
+        @* Отображение навигационного свойства, если оно не равно null *@
         @if (Model.IdUserSegmentNavigation != null)
         {
-            @Html.DisplayFor(modelItem => Model.IdUserSegmentNavigation.Name)
-            <input asp-for="@Model.IdUserSegmentNavigation.Name" type="hidden" />
+            <div>
+                @Html.DisplayFor(modelItem => Model.IdUserSegmentNavigation.Name)
+                <input asp-for="@Model.IdUserSegmentNavigation.Name" type="hidden" />
+            </div>
         }
     </td>
     <td>
-        <a asp-controller="CellMatrices" asp-action="IndexNotEdit" asp-route-id="@Model.IdMatrix">Подробности</a>
+        @* Ссылка на действие контроллера *@
+        <div>
+            <a asp-controller="CellMatrices" asp-action="IndexNotEdit" asp-route-id="@Model.IdMatrix">Подробности</a>
+        </div>
     </td>
 </tr>

@@ -9,13 +9,13 @@
 <form asp-action="IndexNotEdit" class="price-form">
     <!-- Поиск по категории и локации -->
     <div class="row">
-        <div class="col-md-4 d-flex">
+        <div class="col-md-6 d-flex">
             <input asp-for="SearchCategoryText" type="text" class="form-control" placeholder="Поиск по категории...">
-            <input type="submit" name="submitButton" class="btn btn-primary" value="Искать по категории" />
+            <input type="submit" name="submitButton" class="btn btn-secondary" value="Искать" />
         </div>
-        <div class="col-md-4 d-flex">
+        <div class="col-md-6 d-flex">
             <input asp-for="SearchLocationText" type="text" class="form-control" placeholder="Поиск по локации...">
-            <input type="submit" name="submitButton" class="btn btn-primary" value="Искать по локации" />
+            <input type="submit" name="submitButton" class="btn btn-secondary" value="Искать" />
         </div>
     </div>
 

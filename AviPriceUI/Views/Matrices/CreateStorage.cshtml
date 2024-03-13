@@ -5,41 +5,33 @@
 }
 
 <h1>Создание стораджа</h1>
-
-
-    <form asp-controller="Matrices" asp-action="CreateStorage">
+<hr />
+<form class="price-form" asp-controller="Matrices" asp-action="CreateStorage">
     <input name="submitButton" type="submit" value="Отправить сторадж" class="btn btn-primary" />
-	<span class="text-danger">@Model.Message</span>
-    <br />
-    <br />
-        <div class="row">
-            <div class="col-md-4 d-flex">
-                <input asp-for="SearchNameText" type="text" class="form-control" placeholder="Поиск...">
-                <button type="submit" class="btn btn-primary">Искать</button>
-            </div>
-            <div class="col-md-4 d-flex">
-                <input asp-for="SearchUserSegmentText" type="text" class="form-control" placeholder="Поиск...">
-                <button type="submit" class="btn btn-primary">Искать</button>
-            </div>
+    <span class="text-danger">@Model.Message</span>
+    <div class="row">
+        <div class="col-md-6 d-flex">
+            <input asp-for="SearchNameText" type="text" class="form-control" placeholder="Поиск по названию...">
+            <input type="submit" name="submitButton" class="btn btn-secondary" value="Искать" />
         </div>
-    
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-            </th>
-            <th>
-                <span class="text-black">Название матрицы</span>
-            </th>
-            <th>
-                <span class="text-black">Сегмент пользователей</span>
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
+        <div class="col-md-6 d-flex">
+            <input asp-for="SearchUserSegmentText" type="text" class="form-control" placeholder="Поиск по сегменту пользователей...">
+            <input type="submit" name="submitButton" class="btn btn-secondary" value="Искать" />
+        </div>
+    </div>
+    <div class="form-group">
+    <table class="table">
+        <thead>
+            <tr>
+                <th></th>
+                <th><span class="text-black">Название матрицы</span></th>
+                <th><span class="text-black">Сегмент пользователей</span></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
             @Html.EditorFor(model => Model.Matrices)
-    </tbody>
-	</table>
+        </tbody>
+    </table>
+    </div>
 </form>
