@@ -57,12 +57,13 @@ namespace AviPriceUI.Controllers
             cache = memoryCache;
         }
 
-        // GET: CellMatrices
+        // GET: CellMatrices/Index/1
         public async Task<IActionResult> Index(int id)
         {
             return await LoadData(id);
         }
 
+        // GET: CellMatrices/IndexNotEdit/1
         public async Task<IActionResult> IndexNotEdit(int id)
         {
             var cellMatrices = await _context.CellMatrices
@@ -78,6 +79,7 @@ namespace AviPriceUI.Controllers
             });
         }
 
+        //POST: CellMatrices/IndexNotEdit
         [HttpPost]
         public async Task<IActionResult> IndexNotEdit(CellMatricesViewModel cellMatricesViewModel)
         {

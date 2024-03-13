@@ -21,7 +21,7 @@ namespace AviAPI.Classes
             }
             set
             {
-                _memoryCache.Set("Storage", value, DateTimeOffset.Now.AddYears(1));
+                _memoryCache.Set("Storage", value);
             }
         }
     }

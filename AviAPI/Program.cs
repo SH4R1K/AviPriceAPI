@@ -61,7 +61,7 @@ app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int i
     return Results.NotFound(null);
 });
 
-app.MapPost("/Storages/Update", async ([FromBody] byte[] storage, AviApiContext context, StorageService storageService) =>
+app.MapPost("/Storages/Update", async ([FromBody] byte[] storage, StorageService storageService) =>
 {
     using (var memoryStream = new MemoryStream(storage))
     {

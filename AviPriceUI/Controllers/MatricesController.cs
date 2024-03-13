@@ -76,6 +76,8 @@ namespace AviPriceUI.Controllers
                 var selectedMatrices = _matrices.Where(m => m.IsSelected).ToList();
                 if (selectedMatrices.Count == 0)
                     matricesViewModel.Message = "Вы ничего не выбрали";
+                else if(!selectedMatrices.Any(sm => sm.IdUserSegment == null))
+                    matricesViewModel.Message = "В сторадже должна быть хотя бы одна матрица";
                 else if (CheckBaselineCount(selectedMatrices))
                     matricesViewModel.Message = "В сторадже может быть только один базлайн";
                 else
