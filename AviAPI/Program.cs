@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using ProtoBuf;
 using System.IO;
 using System;
+using AviAPI.Classes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AviApiContext>();
 builder.Services.AddMemoryCache();
+builder.Services.AddTransient<StorageService>();
 
 var app = builder.Build();
 
@@ -59,16 +61,14 @@ app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int i
     return Results.NotFound(null);
 });
 
-app.MapPost("/Storages/Update", async ([FromBody] byte[] storage, AviApiContext context) =>
+app.MapPost("/Storages/Update", async ([FromBody] byte[] storage, AviApiContext context, StorageService storageService) =>
 {
-    List<Matrix> matrices;
     using (var memoryStream = new MemoryStream(storage))
     {
-        matrices = Serializer.DeserializeItems<Matrix>(memoryStream, PrefixStyle.Fixed32, -1).ToList();
+        storageService.Matrices = Serializer.DeserializeItems<Matrix>(memoryStream, PrefixStyle.Fixed32, -1).ToList();
     }
-    if(matrices != null)
+    if(storageService.Matrices != null)
     {
-
         return Results.Ok();
     }
     else
