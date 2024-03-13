@@ -79,6 +79,33 @@ app.MapPost("/Storages/Update", async ([FromBody] byte[] storage, StorageService
         return Results.BadRequest();
 });
 
+app.MapPost("/Locations/Update", async ([FromBody] byte[] storage, StorageService storageService) =>
+{
+    using (var memoryStream = new MemoryStream(storage))
+    {
+        storageService.LocationTreePaths = Serializer.DeserializeItems<LocationTreePath>(memoryStream, PrefixStyle.Fixed32, -1).ToList();
+    }
+    if (storageService.LocationTreePaths != null)
+    {
+        return Results.Ok();
+    }
+    else
+        return Results.BadRequest();
+});
+
+app.MapPost("/Categories/Update", async ([FromBody] byte[] storage, StorageService storageService) =>
+{
+    using (var memoryStream = new MemoryStream(storage))
+    {
+        storageService.CategoryTreePaths = Serializer.DeserializeItems<CategoryTreePath>(memoryStream, PrefixStyle.Fixed32, -1).ToList();
+    }
+    if (storageService.CategoryTreePaths != null)
+    {
+        return Results.Ok();
+    }
+    else
+        return Results.BadRequest();
+});
 
 app.UseHttpsRedirection();
 
