@@ -46,7 +46,9 @@ namespace AviPriceUI.Controllers
         {
             try
             {
-                var matrices = _context.Matrices.Include(m => m.IdUserSegmentNavigation).Where(m => id != 0 || id == 0 && m.IdUserSegment != null);
+                var matrices = _context.Matrices
+                    .Include(m => m.IdUserSegmentNavigation)
+                    .Where(m => id != 0 || m.IdUserSegment != null);
                 var matriesList = await matrices.ToListAsync();
                 var matricesViewModel = new MatricesViewModel
                 {
