@@ -36,7 +36,7 @@ namespace AviPriceUI.Controllers
         {
             get => new List<string>
             {
-                "https://localhost:1344/",
+                "http://localhost:1344/",
                 "http://94.241.169.171:32777"
             };
         }
