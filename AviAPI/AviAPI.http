@@ -1,4 +1,4 @@
-@AviAPI_HostAddress = http://localhost:5162
+@AviAPI_HostAddress = http://localhost:1344
 
 GET {{AviAPI_HostAddress}}/weatherforecast/
 Accept: application/json
