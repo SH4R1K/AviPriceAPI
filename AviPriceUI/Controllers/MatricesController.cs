@@ -36,17 +36,21 @@ namespace AviPriceUI.Controllers
         {
             get => new List<string>
             {
-                "https://localhost:7138/",
+                "https://localhost:1344/",
                 "http://94.241.169.171:32777"
             };
         }
+
+        public static byte[]? ByteArray { get; set; }
 
         // GET: Matrices/Index
         public async Task<IActionResult> Index(int? id)
         {
             try
             {
-                var matrices = _context.Matrices.Include(m => m.IdUserSegmentNavigation).Where(m => id != 0 || id == 0 && m.IdUserSegment != null);
+                var matrices = _context.Matrices
+                    .Include(m => m.IdUserSegmentNavigation)
+                    .Where(m => id != 0 || m.IdUserSegment != null);
                 var matriesList = await matrices.ToListAsync();
                 var matricesViewModel = new MatricesViewModel
                 {
@@ -93,7 +97,8 @@ namespace AviPriceUI.Controllers
                 MatricesUpdate(matricesViewModel.Matrices.ToList());
                 if (submitButton == "Искать")
                 {
-                    matricesViewModel.Matrices = _matrices.Where(m => m.Name.Contains(matricesViewModel.SearchNameText))
+                    matricesViewModel.Matrices = _matrices
+                        .Where(m => m.Name.Contains(matricesViewModel.SearchNameText))
                         .Where(m => m.IdUserSegmentNavigation == null || m.IdUserSegmentNavigation.Name.Contains(matricesViewModel.SearchUserSegmentText));
                 }
                 else if (submitButton == "Отправить сторадж")
@@ -121,16 +126,23 @@ namespace AviPriceUI.Controllers
                         {
                             foreach (var matrix in matrixList)
                                 Serializer.SerializeWithLengthPrefix(memoryStream, matrix, PrefixStyle.Fixed32); // Использован ProtoBuf, потому что быстрее JSON в 2 раза
-                            var byteArray = memoryStream.ToArray();
+                            ByteArray = memoryStream.ToArray();
                             HttpClient httpClient;
                             foreach (var url in ServersList)
                             {
-                                httpClient = new HttpClient { BaseAddress = new Uri(url) };
-                                var request = await httpClient.PostAsJsonAsync("/Storages/Update", byteArray);
-                                if (request.StatusCode == System.Net.HttpStatusCode.OK)
-                                    matricesViewModel.Message = "Отправлено";
-                                else
+                                try
+                                {
+                                    httpClient = new HttpClient { BaseAddress = new Uri(url) };
+                                    var request = await httpClient.PostAsJsonAsync("/Storages/Update", ByteArray);
+                                    if (request.StatusCode == System.Net.HttpStatusCode.OK)
+                                        matricesViewModel.Message = "Отправлено";
+                                    else
+                                        matricesViewModel.Message = "Ошибка при отправке";
+                                }
+                                catch
+                                {
                                     matricesViewModel.Message = "Ошибка при отправке";
+                                }
                             }
                         }
                     }
@@ -161,18 +173,10 @@ namespace AviPriceUI.Controllers
         /// Проверяет количество базлайнов
         /// </summary>
         /// <param name="matrices">Список с изменениями</param>
-        /// <returns>Возвращает false, если базлайнов больше одного. Возвращает true, если базлайнов меньше одного</returns>
+        /// <returns>Возвращает true, если базлайнов больше одного. Возвращает false, если базлайнов меньше одного</returns>
         public bool CheckBaselineCount(List<Matrix> matrices)
         {
-            int counter = 0;
-            foreach (var item in matrices)
-            {
-                if (item.IdUserSegment == null)
-                    counter++;
-                if (counter > 1)
-                    return true;
-            }
-            return false;
+            return matrices.Count(m => m.IdUserSegment == null) > 1;
         }
 
         // GET: Matrices/Create
@@ -201,8 +205,8 @@ namespace AviPriceUI.Controllers
                 .Where(m => m.Name.Contains(matricesViewModel.SearchNameText))
                 .Where(m => m.IdUserSegmentNavigation == null
                 || m.IdUserSegmentNavigation.Name.Contains(matricesViewModel.SearchUserSegmentText));
-                var matriesList = await matrices.ToListAsync();
-                matricesViewModel.Matrices = matriesList;
+                var matricesList = await matrices.ToListAsync();
+                matricesViewModel.Matrices = matricesList;
                 if (id == 0)
                     matricesViewModel.MatricesType = "Скидочные матрицы";
                 else

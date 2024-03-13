@@ -6,7 +6,7 @@ internal class Program
 {
     private static async Task Main(string[] args)
     {
-        var httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7138/") };
+        var httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:1344/") };
         using (var context = new AviApiContext())
         {
             using (var memoryStream = new MemoryStream())
