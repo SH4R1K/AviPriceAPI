@@ -42,15 +42,6 @@ a:hover {
     text-decoration: underline;
 }
 
-.btn {
-    background-color: #3498db;
-    color: #fff;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
 .btn:hover {
     background-color: #0056b3;
 }
@@ -93,6 +84,19 @@ tr:hover {
     margin-bottom: 15px;
 }
 
+.btn {
+    background-color: #3498db;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 7px;
+    font-size: 16px;
+    padding: 10px 20px;
+    min-width: 110px;
+}
+
 .btn-primary {
     background-color: #007bff;
     color: #fff;
@@ -110,11 +114,6 @@ tr:hover {
     border-radius: 5px;
 }
 
-.btn {
-    margin: 5px;
-    font-size: 16px;
-    padding: 10px 20px;
-}
 
 .page-navigation {
     display: flex;
@@ -135,4 +134,10 @@ input[type="text"] {
     background-clip: padding-box;
     border: 1px solid #ced4da;
     border-radius: 0.25rem;
+    margin: 6px;
+}
+
+img{
+    width: 200px;
+    height: 65px;
 }

@@ -18,4 +18,10 @@
     <PackageReference Include="protobuf-net.Core" Version="3.2.30" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Resource Include="wwwroot\images\AviPriceLogo.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
 </Project>
