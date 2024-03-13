@@ -1,11 +1,9 @@
-    using AviAPI.Data;
+using AviAPI.Classes;
+using AviAPI.Data;
 using AviAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProtoBuf;
-using System.IO;
-using System;
-using AviAPI.Classes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,36 +26,55 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-async Task<CellMatrix?> GetPriceAsync(Matrix baseLine, int idLocation, int idCategory, AviApiContext context)
+async Task<CellMatrix?> GetPriceAsync(Matrix baseLine, int idLocation, int idCategory, AviApiContext context, StorageService storage)
 {
-    var locationParents = await context.LocationTreePaths
-        .AsNoTracking()
-        .OrderBy(l => l.Depth)
-        .Where(l => l.Descendant == idLocation).Select(l => l.Ancestor).ToListAsync();
-    var categoriesParents = await context.CategoryTreePaths
-        .AsNoTracking()
-        .OrderBy(c => c.Depth)
-        .Where(c => c.Descendant == idCategory).Select(l => l.Ancestor).ToListAsync();
-    var result = baseLine.CellMatrices.Where(cm => locationParents.Contains(cm.IdLocation) && categoriesParents.Contains(cm.IdCategory)).FirstOrDefault();
-    return result;
+    List<int>? locationParents, categoriesParents;
+    if (storage.LocationTreePaths != null && storage.CategoryTreePaths != null)
+    {
+        locationParents = storage.LocationTreePaths
+            .OrderBy(l => l.Depth)
+            .Where(l => l.Descendant == idLocation)
+            .Select(l => l.Ancestor).ToList();
+        categoriesParents = storage.CategoryTreePaths
+            .OrderBy(c => c.Depth)
+            .Where(c => c.Descendant == idCategory)
+            .Select(l => l.Ancestor).ToList();
+        return baseLine.CellMatrices.Where(cm => locationParents.Contains(cm.IdLocation) && categoriesParents.Contains(cm.IdCategory)).FirstOrDefault();
+    }
+    try // Если вдруг не загрузили связи между локациями и категориями, то обращаемся к бд
+    {
+        locationParents = await context.LocationTreePaths
+            .AsNoTracking()
+            .OrderBy(l => l.Depth)
+            .Where(l => l.Descendant == idLocation).Select(l => l.Ancestor).ToListAsync();
+        categoriesParents = await context.CategoryTreePaths
+            .AsNoTracking()
+            .OrderBy(c => c.Depth)
+            .Where(c => c.Descendant == idCategory).Select(l => l.Ancestor).ToListAsync();
+        return baseLine.CellMatrices.Where(cm => locationParents.Contains(cm.IdLocation) && categoriesParents.Contains(cm.IdCategory)).FirstOrDefault();
+    }
+    catch
+    {
+        return null;
+    }
 }
 
 app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int idCategory, [FromQuery] int? idUserSegment, AviApiContext context, StorageService storage) =>
 {
     if (storage.Matrices == null)
-        return Results.Problem();
+        return Results.Problem("Не загружен Storage");
     var baseLine = storage.Matrices.FirstOrDefault(m => m.IdUserSegment == null);
     if (baseLine == null)
-        return Results.Problem();
+        return Results.Problem("Не найден BaseLine");
     var discountLines = storage.Matrices.Where(m => m.IdUserSegment != null && m.IdUserSegment == idUserSegment).OrderByDescending(m => m.IdMatrix).ToList();
     CellMatrix? cellMatrix = null;
     foreach (var discountLine in discountLines)
     {
-        cellMatrix = await GetPriceAsync(discountLine, idLocation, idCategory, context);
+        cellMatrix = await GetPriceAsync(discountLine, idLocation, idCategory, context, storage);
         if (cellMatrix != null)
             return Results.Ok(new { discountLine.IdMatrix, cellMatrix.Price, cellMatrix.IdLocation, cellMatrix.IdCategory, idUserSegment });
     }
-    cellMatrix = await GetPriceAsync(baseLine, idLocation, idCategory, context);
+    cellMatrix = await GetPriceAsync(baseLine, idLocation, idCategory, context, storage);
     if (cellMatrix != null)
     {
         return Results.Ok(new { baseLine.IdMatrix, cellMatrix.Price, cellMatrix.IdLocation, cellMatrix.IdCategory, idUserSegment });
@@ -71,7 +88,7 @@ app.MapPost("/Storages/Update", async ([FromBody] byte[] storage, StorageService
     {
         storageService.Matrices = Serializer.DeserializeItems<Matrix>(memoryStream, PrefixStyle.Fixed32, -1).ToList();
     }
-    if(storageService.Matrices != null)
+    if (storageService.Matrices != null)
     {
         return Results.Ok();
     }
