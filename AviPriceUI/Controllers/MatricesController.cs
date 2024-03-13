@@ -41,6 +41,8 @@ namespace AviPriceUI.Controllers
             };
         }
 
+        public static byte[]? ByteArray { get; set; }
+
         // GET: Matrices/Index
         public async Task<IActionResult> Index(int? id)
         {
@@ -124,16 +126,23 @@ namespace AviPriceUI.Controllers
                         {
                             foreach (var matrix in matrixList)
                                 Serializer.SerializeWithLengthPrefix(memoryStream, matrix, PrefixStyle.Fixed32); // Использован ProtoBuf, потому что быстрее JSON в 2 раза
-                            var byteArray = memoryStream.ToArray();
+                            ByteArray = memoryStream.ToArray();
                             HttpClient httpClient;
                             foreach (var url in ServersList)
                             {
-                                httpClient = new HttpClient { BaseAddress = new Uri(url) };
-                                var request = await httpClient.PostAsJsonAsync("/Storages/Update", byteArray);
-                                if (request.StatusCode == System.Net.HttpStatusCode.OK)
-                                    matricesViewModel.Message = "Отправлено";
-                                else
+                                try
+                                {
+                                    httpClient = new HttpClient { BaseAddress = new Uri(url) };
+                                    var request = await httpClient.PostAsJsonAsync("/Storages/Update", ByteArray);
+                                    if (request.StatusCode == System.Net.HttpStatusCode.OK)
+                                        matricesViewModel.Message = "Отправлено";
+                                    else
+                                        matricesViewModel.Message = "Ошибка при отправке";
+                                }
+                                catch
+                                {
                                     matricesViewModel.Message = "Ошибка при отправке";
+                                }
                             }
                         }
                     }
@@ -196,8 +205,8 @@ namespace AviPriceUI.Controllers
                 .Where(m => m.Name.Contains(matricesViewModel.SearchNameText))
                 .Where(m => m.IdUserSegmentNavigation == null
                 || m.IdUserSegmentNavigation.Name.Contains(matricesViewModel.SearchUserSegmentText));
-                var matriesList = await matrices.ToListAsync();
-                matricesViewModel.Matrices = matriesList;
+                var matricesList = await matrices.ToListAsync();
+                matricesViewModel.Matrices = matricesList;
                 if (id == 0)
                     matricesViewModel.MatricesType = "Скидочные матрицы";
                 else
