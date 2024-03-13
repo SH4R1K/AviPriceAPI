@@ -32,6 +32,15 @@ namespace AviPriceUI.Controllers
             }
         }
 
+        public List<string> ServersList
+        {
+            get => new List<string>
+            {
+                "https://localhost:7138/",
+                "http://94.241.169.171:32777"
+            };
+        }
+
         // GET: Matrices/Index
         public async Task<IActionResult> Index(int? id)
         {
@@ -113,12 +122,16 @@ namespace AviPriceUI.Controllers
                             foreach (var matrix in matrixList)
                                 Serializer.SerializeWithLengthPrefix(memoryStream, matrix, PrefixStyle.Fixed32); // Использован ProtoBuf, потому что быстрее JSON в 2 раза
                             var byteArray = memoryStream.ToArray();
-                            var httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7138/") };
-                            var request = await httpClient.PostAsJsonAsync("/Storages/Update", byteArray);
-                            if (request.StatusCode == System.Net.HttpStatusCode.OK)
-                                matricesViewModel.Message = "Отправлено";
-                            else
-                                matricesViewModel.Message = "Ошибка при отправке";
+                            HttpClient httpClient;
+                            foreach (var url in ServersList)
+                            {
+                                httpClient = new HttpClient { BaseAddress = new Uri(url) };
+                                var request = await httpClient.PostAsJsonAsync("/Storages/Update", byteArray);
+                                if (request.StatusCode == System.Net.HttpStatusCode.OK)
+                                    matricesViewModel.Message = "Отправлено";
+                                else
+                                    matricesViewModel.Message = "Ошибка при отправке";
+                            }
                         }
                     }
                 }
