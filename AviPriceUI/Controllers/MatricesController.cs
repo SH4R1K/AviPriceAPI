@@ -97,7 +97,7 @@ namespace AviPriceUI.Controllers
                         foreach (var matrix in matrixList)
                             Serializer.SerializeWithLengthPrefix(memoryStream, matrix, PrefixStyle.Fixed32);
                         var byteArray = memoryStream.ToArray();
-                        var httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7138/") };
+                        var httpClient = new HttpClient { BaseAddress = new Uri("http://94.241.169.171:32777/") };
                         var request = await httpClient.PostAsJsonAsync("/Storages/Update", byteArray);
                         if(request.StatusCode == System.Net.HttpStatusCode.OK)
                             matricesViewModel.Message = "Отправлено";
