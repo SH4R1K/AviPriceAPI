@@ -6,17 +6,20 @@
 
 <h1>@Model.MatrixName</h1>
 
-<form asp-action="IndexNotEdit">
+<form asp-action="IndexNotEdit" class="price-form">
+    <!-- Поиск по категории и локации -->
     <div class="row">
         <div class="col-md-4 d-flex">
-            <input asp-for="SearchCategoryText" type="text" class="form-control" placeholder="Поиск...">
-            <input type="submit" name="submitButton" class="btn btn-primary" value="Искать" />
+            <input asp-for="SearchCategoryText" type="text" class="form-control" placeholder="Поиск по категории...">
+            <input type="submit" name="submitButton" class="btn btn-primary" value="Искать по категории" />
         </div>
         <div class="col-md-4 d-flex">
-            <input asp-for="SearchLocationText" type="text" class="form-control" placeholder="Поиск...">
-            <input type="submit" name="submitButton" class="btn btn-primary" value="Искать" />
+            <input asp-for="SearchLocationText" type="text" class="form-control" placeholder="Поиск по локации...">
+            <input type="submit" name="submitButton" class="btn btn-primary" value="Искать по локации" />
         </div>
     </div>
+
+    <!-- Навигация по страницам -->
     @if (Model.PageCount > 1)
     {
         <div style="display: flex; justify-content: space-between;">
@@ -24,35 +27,26 @@
             <input type="submit" name="submitButton" class="btn btn-secondary" style="order: 2;" value="Вперед" />
         </div>
     }
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                <span class="text-black">Категория</span>
-            </th>
-            <th>
-                    <span class="text-black">Локация</span>
-			</th>
-			<th>
-                    <span class="text-black">Цена</span>
-			</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.CellMatrices)
+
+    <!-- Таблица с данными -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th><span class="text-black">Категория</span></th>
+                <th><span class="text-black">Локация</span></th>
+                <th><span class="text-black">Цена</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Вывод данных из модели CellMatrices -->
+            @foreach (var item in Model.CellMatrices)
             {
                 <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.IdCategoryNavigation.Name)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.IdLocationNavigation.Name)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Price)
-                    </td>
+                    <td>@Html.DisplayFor(modelItem => item.IdCategoryNavigation.Name)</td>
+                    <td>@Html.DisplayFor(modelItem => item.IdLocationNavigation.Name)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Price)</td>
                 </tr>
             }
-    </tbody>
-</table>       
+        </tbody>
+    </table>
 </form>

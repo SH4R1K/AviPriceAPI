@@ -143,6 +143,8 @@ namespace AviPriceUI.Controllers
         {
             try
             {
+                if (id == 0)
+                    id = _idMatrix ?? 0;
                 CellMatricesViewModel cellMatricesViewModel;
                 Matrix? matrix = _context.Matrices.OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
 
@@ -153,7 +155,7 @@ namespace AviPriceUI.Controllers
                 {
                     ViewData["IdUserSegment"] = new SelectList(_context.UserSegments, "IdUserSegment", "Name");
                     _idMatrix = id;
-                    if (!_cells.All(m => m.IdMatrix == id))
+                    if (_cells != null && !_cells.All(m => m.IdMatrix == id))
                         _cells = null;
                     cellMatricesViewModel = new CellMatricesViewModel
                     {

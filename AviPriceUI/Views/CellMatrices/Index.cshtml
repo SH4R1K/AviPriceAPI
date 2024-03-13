@@ -7,67 +7,71 @@
 <h1>@Model.MatrixName</h1>
 <hr />
 
-<form asp-action="Index">
-  
-    <div class="form-group">
-<p>
-    <input name="submitButton" value="Добавить цену" class="btn btn-secondary" type="submit"/>
-</p>
+<!-- Форма изменения или создания матрицы -->
+<form asp-action="Index" class="price-form">
+    <!-- Кнопки действий -->
+	<div class="form-group">
+		<!-- Кнопка "Сохранить" -->
+		<input name="submitButton" type="submit" value="Сохранить" class="btn btn-primary" />
+        <!-- Кнопка "Добавить цену" -->
+        <input name="submitButton" value="Добавить цену" class="btn btn-secondary" type="submit" />
+    </div>
 
+    <!-- Сообщения об ошибках -->
     <div class="form-group">
-    <input name="submitButton" type="submit" value="Сохранить" class="btn btn-primary" />
-    <span class="text-danger">@Model.Message</span>
-		</div>
-    @if(Model.IdUserSegment == 0)
+        <span class="text-danger">@Model.Message</span>
+    </div>
+
+    <!-- Выбор пользователя (если не задан) -->
+    @if (Model.IdUserSegment == 0)
     {
         <div class="form-group">
-            <label asp-for="@Model.IdUserSegment" class="control-label"></label>
+            <label asp-for="@Model.IdUserSegment" class="control-label">Выберите пользователя:</label>
             <select asp-for="IdUserSegment" class="form-control" asp-items="ViewBag.IdUserSegment"></select>
-            </div>
-            <br />
+        </div>
     }
     else
     {
-        <br />
         <input asp-for="@Model.IdUserSegment" type="hidden" />
     }
-        <div class="row">
-        <div class="col-md-3 d-flex">
-                <input asp-for="SearchCategoryText" type="text" class="form-control" placeholder="Поиск...">
-                <input type="submit" name="submitButton" class="btn btn-primary" value="Искать" />
+
+    <!-- Поиск категории и локации -->
+    <div class="row">
+        <div class="col-md-6 d-flex">
+            <input asp-for="SearchCategoryText" type="text" class="form-control" placeholder="Поиск по категории...">
+            <input type="submit" name="submitButton" class="btn btn-secondary" value="Искать по категории" />
         </div>
-        <div class="col-md-3 d-flex">
-            <input asp-for="SearchLocationText" type="text" class="form-control" placeholder="Поиск...">
-                <input type="submit" name="submitButton" class="btn btn-primary" value="Искать"/>
+        <div class="col-md-6 d-flex">
+            <input asp-for="SearchLocationText" type="text" class="form-control" placeholder="Поиск по локации...">
+            <input type="submit" name="submitButton" class="btn btn-secondary" value="Искать по локации" />
         </div>
+    </div>
+
+    <!-- Навигация по страницам -->
+    @if (Model.PageCount > 1)
+    {
+        <div class="page-navigation">
+            <input type="submit" name="submitButton" class="btn btn-secondary" style="order: 1;" value="Назад" />
+            <input type="submit" name="submitButton" class="btn btn-secondary" style="order: 2;" value="Вперед" />
         </div>
-        @if(Model.PageCount > 1)
-        {
-            <div style="display: flex; justify-content: space-between;">
-                <input type="submit" name="submitButton" class="btn btn-secondary" style="order: 1;" value="Назад" />
-                <input type="submit" name="submitButton" class="btn btn-secondary" style="order: 2;" value="Вперед" />
-            </div>
-		}
+    }
+
+    <!-- Таблица с данными -->
     <div class="form-group">
-    <table class="table">
-    <thead>
-        <tr>
-            <th>
-                <label class="text-black">Категория</label>
-            </th>
-            <th>
-                    <label class="text-black">Локация</label>
-			</th>
-			<th>
-                    <label class="text-black">Цена</label>
-			</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @Html.EditorFor(model => Model.CellMatrices)
-    </tbody>
-</table>    
-</div>
-</div>
+        <table class="table">
+            <!-- Заголовки столбцов -->
+            <thead>
+                <tr>
+                    <th>Категория</th>
+                    <th>Локация</th>
+                    <th>Цена</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <!-- Редактирование строк -->
+            <tbody>
+                @Html.EditorFor(model => Model.CellMatrices)
+            </tbody>
+        </table>
+    </div>
 </form>

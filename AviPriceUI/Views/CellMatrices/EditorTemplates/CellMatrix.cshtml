@@ -2,18 +2,24 @@
 
 <tr>
     <td>
-        @Html.DisplayFor(modelItem => Model.IdCategoryNavigation.Name)
-        <input asp-for="@Model.IdCategory" type="hidden" />
-        <input asp-for="@Model.IdMatrix" type="hidden" />
-        <input asp-for="@Model.IdCellMatrix" type="hidden" />
+        @if (Model.IdCategoryNavigation != null)
+        {
+            @Html.DisplayFor(modelItem => Model.IdCategoryNavigation.Name)
+            <input asp-for="@Model.IdCategory" type="hidden" />
+            <input asp-for="@Model.IdMatrix" type="hidden" />
+            <input asp-for="@Model.IdCellMatrix" type="hidden" />
+        }
     </td>
     <td>
-        @Html.DisplayFor(modelItem => Model.IdLocationNavigation.Name)
-        <input asp-for="@Model.IdLocation" type="hidden" />
+        @if (Model.IdLocationNavigation != null)
+        {
+            @Html.DisplayFor(modelItem => Model.IdLocationNavigation.Name)
+            <input asp-for="@Model.IdLocation" type="hidden" />
+        }
     </td>
     <td>
         <input asp-for="@Model.Price" />
-        <span asp-validation-for="@Model.Price" class="text-danger"/>
+        <span asp-validation-for="@Model.Price" class="text-danger" />
     </td>
     <td>
         <a asp-action="Delete" asp-route-id="@Model.IdCellMatrix">Удалить</a>
