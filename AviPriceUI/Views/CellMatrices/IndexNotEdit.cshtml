@@ -17,6 +17,13 @@
             <input type="submit" name="submitButton" class="btn btn-primary" value="Искать" />
         </div>
     </div>
+    @if (Model.PageCount > 1)
+    {
+        <div style="display: flex; justify-content: space-between;">
+            <input type="submit" name="submitButton" class="btn btn-secondary" style="order: 1;" value="Назад" />
+            <input type="submit" name="submitButton" class="btn btn-secondary" style="order: 2;" value="Вперед" />
+        </div>
+    }
 <table class="table">
     <thead>
         <tr>
