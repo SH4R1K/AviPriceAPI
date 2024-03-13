@@ -28,18 +28,28 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-async Task<CellMatrix?> GetPriceAsync(Matrix baseLine, int idLocation, int idCategory, AviApiContext context)
+async Task<CellMatrix?> GetPriceAsync(Matrix baseLine, int idLocation, int idCategory, AviApiContext context, StorageService storage)
 {
-    var locationParents = await context.LocationTreePaths
+    List<int>? locationParents, categoriesParents;
+    if (storage.LocationTreePaths != null && storage.CategoryTreePaths != null)
+    {
+        locationParents = storage.LocationTreePaths
+            .OrderBy(l => l.Depth)
+            .Where(l => l.Descendant == idLocation).Select(l => l.Ancestor).ToList();
+        categoriesParents = storage.CategoryTreePaths
+            .OrderBy(c => c.Depth)
+            .Where(c => c.Descendant == idCategory).Select(l => l.Ancestor).ToList();
+        return baseLine.CellMatrices.Where(cm => locationParents.Contains(cm.IdLocation) && categoriesParents.Contains(cm.IdCategory)).FirstOrDefault();
+    }
+    locationParents = await context.LocationTreePaths
         .AsNoTracking()
         .OrderBy(l => l.Depth)
         .Where(l => l.Descendant == idLocation).Select(l => l.Ancestor).ToListAsync();
-    var categoriesParents = await context.CategoryTreePaths
+    categoriesParents = await context.CategoryTreePaths
         .AsNoTracking()
         .OrderBy(c => c.Depth)
         .Where(c => c.Descendant == idCategory).Select(l => l.Ancestor).ToListAsync();
-    var result = baseLine.CellMatrices.Where(cm => locationParents.Contains(cm.IdLocation) && categoriesParents.Contains(cm.IdCategory)).FirstOrDefault();
-    return result;
+    return baseLine.CellMatrices.Where(cm => locationParents.Contains(cm.IdLocation) && categoriesParents.Contains(cm.IdCategory)).FirstOrDefault();
 }
 
 app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int idCategory, [FromQuery] int? idUserSegment, AviApiContext context, StorageService storage) =>
@@ -53,11 +63,11 @@ app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int i
     CellMatrix? cellMatrix = null;
     foreach (var discountLine in discountLines)
     {
-        cellMatrix = await GetPriceAsync(discountLine, idLocation, idCategory, context);
+        cellMatrix = await GetPriceAsync(discountLine, idLocation, idCategory, context, storage);
         if (cellMatrix != null)
             return Results.Ok(new { discountLine.IdMatrix, cellMatrix.Price, cellMatrix.IdLocation, cellMatrix.IdCategory, idUserSegment });
     }
-    cellMatrix = await GetPriceAsync(baseLine, idLocation, idCategory, context);
+    cellMatrix = await GetPriceAsync(baseLine, idLocation, idCategory, context, storage);
     if (cellMatrix != null)
     {
         return Results.Ok(new { baseLine.IdMatrix, cellMatrix.Price, cellMatrix.IdLocation, cellMatrix.IdCategory, idUserSegment });
