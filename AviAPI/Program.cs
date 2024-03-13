@@ -42,9 +42,14 @@ async Task<CellMatrix?> GetPriceAsync(Matrix baseLine, int idLocation, int idCat
     return result;
 }
 
-app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int idCategory, [FromQuery] int? idUserSegment, AviApiContext context) =>
+app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int idCategory, [FromQuery] int? idUserSegment, AviApiContext context, StorageService storage) =>
 {
-    var discountLines = context.Matrices.Include(m => m.CellMatrices).Where(m => m.IdUserSegment != null && m.IdUserSegment == idUserSegment).OrderByDescending(m => m.IdMatrix).ToList();
+    if (storage.Matrices == null)
+        return Results.Problem();
+    var baseLine = storage.Matrices.FirstOrDefault(m => m.IdUserSegment == null);
+    if (baseLine == null)
+        return Results.Problem();
+    var discountLines = storage.Matrices.Where(m => m.IdUserSegment != null && m.IdUserSegment == idUserSegment).OrderByDescending(m => m.IdMatrix).ToList();
     CellMatrix? cellMatrix = null;
     foreach (var discountLine in discountLines)
     {
@@ -52,7 +57,6 @@ app.MapGet("/CellMatrixes", async ([FromQuery] int idLocation, [FromQuery] int i
         if (cellMatrix != null)
             return Results.Ok(new { discountLine.IdMatrix, cellMatrix.Price, cellMatrix.IdLocation, cellMatrix.IdCategory, idUserSegment });
     }
-    var baseLine = context.Matrices.AsNoTracking().Include(m => m.CellMatrices).OrderBy(m => m.IdMatrix).LastOrDefault(m => m.IdUserSegment == null);
     cellMatrix = await GetPriceAsync(baseLine, idLocation, idCategory, context);
     if (cellMatrix != null)
     {
