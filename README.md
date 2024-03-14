@@ -66,6 +66,7 @@ POST: /Locations/Update:
 
   Body byte[] storage - файл с локациями, сериализованных с помощью Protobuf
   Обновляет локации в api
+  
   Возвращает:
   - 200
   - 400
@@ -73,6 +74,7 @@ POST: /Locations/Update:
 POST: /Categories/Update: - Обновление категорий для API
 
   Body byte[] storage - файл с категориями, сериализованных с помощью Protobuf
+  
   Возвращает:
   - 200
   - 400
