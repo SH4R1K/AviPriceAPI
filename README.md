@@ -49,6 +49,7 @@ docker pull markelushakov/aviapi
 
 ## Дополнительная информация
 POST: /Storages/Update:
+
   Body byte[] storage - файл со стораджем, сериализованных с помощью Protobuf
   Обновляет сторадж в api
   Возвращает:
@@ -56,6 +57,7 @@ POST: /Storages/Update:
  -  400
 
 POST: /Locations/Update: 
+
   Body byte[] storage - файл с локациями, сериализованных с помощью Protobuf
   Обновляет локации в api
   Возвращает:
@@ -63,20 +65,25 @@ POST: /Locations/Update:
   - 400
 
 POST: /Categories/Update: - Обновление категорий для API
+
   Body byte[] storage - файл с категориями, сериализованных с помощью Protobuf
   Возвращает:
   - 200
   - 400
 
 GET: /CellMatrixes - Получение цены из стораджа
-  Query idLocation
-  Query idCategory
-  Query idUserSegment - необязательно
+
+ - int idLocation
+ - int idCategory
+ - int idUserSegment - необязательно
+  
 Возвращает:
 200:
-  - idMatrix - индекс матрицы, где найдена цена
-  - price - цена
-  - idLocation - локация, где найдена цена
-  - idCategory - категория, где найдена цена
-  - idUserSegment - сегмент пользователя
+
+  - int idMatrix - индекс матрицы, где найдена цена
+  - decimal price - цена
+  - int idLocation - локация, где найдена цена
+  - int idCategory - категория, где найдена цена
+  - int idUserSegment - сегмент пользователя
+
 404:
