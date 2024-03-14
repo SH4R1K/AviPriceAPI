@@ -6,8 +6,7 @@
 
 - [@SH4R1K](https://github.com/SH4R1K) - Team Leader👑, DataBase Module
 - [@Pluhenciya](https://github.com/Pluhenciya) - DataBase Module
-- [@Meresk](https://github.com/meresk) - User Interface
-- [@Morokenec](https://github.com/Morokenec) - Manager
+- [@Morokenec](https://github.com/Morokenec) - Manager, DevOps
 - [@4qiz](https://www.github.com/4qiz) - Design
 
 ## Stack
@@ -17,6 +16,7 @@
 - C#
 - MS SQL Server 2022
 - EFCore
+- Docker
 
 ## Screenshots
 
@@ -34,3 +34,35 @@
 4 That's all
 
 ## Дополнительная информация
+POST: /Storages/Update:
+  Body byte[] storage - файл со стораджем, сериализованных с помощью Protobuf
+  Обновляет сторадж в api
+  Возвращает:
+ -  200
+ -  400
+
+POST: /Locations/Update: 
+  Body byte[] storage - файл с локациями, сериализованных с помощью Protobuf
+  Обновляет локации в api
+  Возвращает:
+  - 200
+  - 400
+
+POST: /Categories/Update: - Обновление категорий для API
+  Body byte[] storage - файл с категориями, сериализованных с помощью Protobuf
+  Возвращает:
+  - 200
+  - 400
+
+GET: /CellMatrixes - Получение цены из стораджа
+  Query idLocation
+  Query idCategory
+  Query idUserSegment - необязательно
+Возвращает:
+200:
+  - idMatrix - индекс матрицы, где найдена цена
+  - price - цена
+  - idLocation - локация, где найдена цена
+  - idCategory - категория, где найдена цена
+  - idUserSegment - сегмент пользователя
+404:
