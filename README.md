@@ -41,6 +41,10 @@
 
 4 That's all
 
+## Docker
+
+docker pull markelushakov/aviapi
+
 ## Дополнительная информация
 POST: /Storages/Update:
   Body byte[] storage - файл со стораджем, сериализованных с помощью Protobuf
