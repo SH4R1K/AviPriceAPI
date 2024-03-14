@@ -33,17 +33,19 @@
 
 ## Installation
 
-1 Clone repository
+1 Клонируйте репозиторий
 
-2 Open solution in Visual Studio
+2 Откройте решение в Visual Studio
 
-3 Start two project
+3 Разверните БД, АПИ и Админ Панель на ваших ресурсах
 
-4 That's all
+4 Отредактируйте строки подключения и запросов
 
-## Docker
+5 Запустите все проекты
 
-docker pull markelushakov/aviapi
+## Docker - развертывание API
+
+docker pull markelushakov/aviapi 
 
 ## Дополнительная информация
 POST: /Storages/Update:
