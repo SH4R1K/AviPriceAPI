@@ -4,10 +4,10 @@
 
 ## Team
 
-- [@SH4R1K](https://github.com/SH4R1K) - Team Leader👑, DataBase Module
-- [@Pluhenciya](https://github.com/Pluhenciya) - DataBase Module
+- [@SH4R1K](https://github.com/SH4R1K) - Team Leader👑, Backend
+- [@Pluhenciya](https://github.com/Pluhenciya) - Frontend
 - [@Morokenec](https://github.com/Morokenec) - Manager, DevOps
-- [@4qiz](https://www.github.com/4qiz) - Design
+- [@4qiz](https://www.github.com/4qiz) - Frontend
 
 ## Stack
 
@@ -20,8 +20,11 @@
 
 ## Screenshots
 
-![Main Screen](/github_res/mainscreen.png?raw=true ".")
-![Second Screen Screen](/github_res/secondscreen.png?raw=true ".")
+![Страница основной матрицы](/github_res/сайт.png?raw=true ".")
+![Скидочные матрицы](/github_res/скидочные.png?raw=true ".")
+![Страница сбора стораджа](/github_res/сторадж.png?raw=true ".")
+![Тестирование нагрузки](/github_res/постман.png?raw=true ".")
+![Пример ответа](/github_res/родители.png?raw=true ".")
 
 ## Installation
 
